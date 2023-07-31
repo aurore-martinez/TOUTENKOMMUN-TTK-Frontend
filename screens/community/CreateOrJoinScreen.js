@@ -18,7 +18,7 @@ export default function CreateOrJoinScreen({ navigation }) {
 
         <TouchableOpacity style={styles.buttonJoin} onPress={() => navigation.navigate("Join")}>
           <View style={styles.iconTextContainer}>
-          <FontAwesome style={styles.joinIcon} name='user' size={20} color='#353639'/>
+          <FontAwesome style={styles.joinIcon} name='sign-out' size={20} color='#353639'/>
             <Text style={styles.btnTextJoinCommu}>Rejoindre ma communauté</Text>
           </View>
         </TouchableOpacity>
@@ -29,7 +29,7 @@ export default function CreateOrJoinScreen({ navigation }) {
           <Text style={styles.h5}>Prêt(e) à lancer ta propre communauté et inviter les proches?</Text>
           <TouchableOpacity style={styles.buttoncreate} onPress={() => navigation.navigate("Create")}>
             <View style={styles.iconTextContainer}>
-            <FontAwesome style={styles.createxIcon} name='user-plus' size={20} color='#353639'/>
+            <FontAwesome style={styles.createxIcon} name='users' size={20} color='#353639'/>
               <Text style={styles.createButtonText}>Créer ma communauté</Text>
             </View>
           </TouchableOpacity>
