@@ -1,22 +1,24 @@
 import React from 'react';
 import { Platform, SafeAreaView, StatusBar, TouchableOpacity, StyleSheet, Text, View } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 export default function CreateOrJoinScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>TOUTENKOMMUN</Text>
-        <Icon name="user" size={24} color="white" style={styles.icon} />
+        <FontAwesome style={styles.userIcon} name='user' size={20} color='#353639'/>
       </View>
-      <Text style={styles.tabtitle}>Choisir ma communauté</Text>
+      
+      <Text style={styles.h5}>Choisir ma communauté</Text>
+      
 
       <View style={styles.contentContainer}>        
-        <Text>Tu connais le nom de la communauté et tu as un code d'accès ?</Text>
+        <Text style={styles.h5}>Tu connais le nom de la communauté et tu as un code d'accès ?</Text>
 
         <TouchableOpacity style={styles.buttonJoin} onPress={() => navigation.navigate("Join")}>
           <View style={styles.iconTextContainer}>
-            <Icon name="arrow-circle-o-right" size={20} color="white" />
+          <FontAwesome style={styles.joinIcon} name='sign-out' size={20} color='#353639'/>
             <Text style={styles.btnTextJoinCommu}>Rejoindre ma communauté</Text>
           </View>
         </TouchableOpacity>
@@ -24,11 +26,11 @@ export default function CreateOrJoinScreen({ navigation }) {
         <View style={styles.separatorBar} />
 
         <View style={styles.createContent}>
-          <Text>Prêt(e) à lancer ta propre communauté et inviter les proches?</Text>
+          <Text style={styles.h5}>Prêt(e) à lancer ta propre communauté et inviter les proches?</Text>
           <TouchableOpacity style={styles.buttoncreate} onPress={() => navigation.navigate("Create")}>
             <View style={styles.iconTextContainer}>
-              <Icon name="users" size={20} color="white" />
-              <Text style={styles.createButton}>Créer ma communauté</Text>
+            <FontAwesome style={styles.createxIcon} name='users' size={20} color='#353639'/>
+              <Text style={styles.createButtonText}>Créer ma communauté</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -71,39 +73,52 @@ const styles = StyleSheet.create({
   tabtitle: {
     fontSize: 20,
     fontWeight: '600',
-    marginBottom: 0,
+  
   },
   btnTextJoinCommu: {
     textAlign: 'center',
     color: 'white',
     fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 16,
+    marginBottom: 10,
+
+
   },
-  createButton: {
+  createButtonText: {
     textAlign: 'center',
-    color: 'white',
+    color: '#198EA5',
     fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 16,
+    marginBottom: 10,
   },
   buttonJoin: {
+    flexDirection: 'row',
     alignItems: 'center',
     paddingTop: 15,
-    width: '80%',
+    width: '87%',
     marginTop: 30,
     backgroundColor: '#198EA5',
-    borderRadius: 0,
+    borderRadius: 10,
     marginBottom: 65,
     justifyContent: 'center',
+    
+    
+
   },
   buttoncreate: {
     alignItems: 'center',
     paddingTop: 15,
     width: '80%', 
     marginTop: 30,
-    backgroundColor: '#198EA5',
-    borderRadius: 0,
+    backgroundColor: 'white',
+    borderRadius: 10,
     marginBottom: 65,
     justifyContent: 'center',
     borderColor: '#198EA5',
     borderWidth: 2,
+    flexDirection: 'row'
   },
   iconTextContainer: {
     flexDirection: 'row',
@@ -112,7 +127,7 @@ const styles = StyleSheet.create({
   separatorBar: {
     borderBottomColor: '#126171',
     borderBottomWidth: 2,
-    width: '80%',
+    width: 300,
     textAlign: 'center',
     marginBottom: '5%',
   },
@@ -120,4 +135,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  h5: {
+    fontSize: 20,
+    color: '#353639',
+  },
+  userIcon: {
+    padding: 10,
+  },
+  joinIcon: {
+    color: 'white',
+    fontSize: '20',
+    fontWeight: 'bold',
+    marginRight: 10,
+    marginBottom: '5%',
+  },
+  createxIcon: {
+    color: '#198EA5', 
+    fontSize: '20',
+    fontWeight: 'bold',
+    marginRight: 10,
+    marginBottom: '5%',
+
+  },
+
 });
