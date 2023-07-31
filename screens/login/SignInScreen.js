@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Platform, SafeAreaView, Statu
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 export default function SignInScreen({ navigation }) {
+
   return (
     <SafeAreaView style={styles.container} >
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
