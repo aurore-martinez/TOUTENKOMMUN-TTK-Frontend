@@ -1,5 +1,5 @@
 import { Platform, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TextInput } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 
@@ -16,7 +16,10 @@ export default function JoinScreen({ navigation }) {
         >
           <View style={styles.icontext}>
             <FontAwesome name="user" size='20' color='black' />
-            <Text>Nom de la communauté</Text>
+            <TextInput
+              placeholder="Nom de la communauté"
+              autoCapitalize="none"
+            />
           </View>
         </TouchableOpacity> 
         <TouchableOpacity
@@ -24,7 +27,10 @@ export default function JoinScreen({ navigation }) {
         >
           <View style={styles.icontext}>
             <FontAwesome name="lock" size='20' color='black' />
-            <Text>Code d'accès</Text>
+            <TextInput
+              placeholder="Code d'accès"
+              autoCapitalize="none"
+            />
           </View>
         </TouchableOpacity> 
         <TouchableOpacity onPress={() => navigation.navigate("Prêt")}>

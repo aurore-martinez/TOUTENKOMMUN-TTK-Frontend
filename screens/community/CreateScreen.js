@@ -1,5 +1,5 @@
 import { Platform, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TextInput } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
@@ -16,7 +16,10 @@ export default function CreateScreen({ navigation }) {
         >
           <View style={styles.icontext}>
             <FontAwesome name="user" size='20' color='black' />
-            <Text>Nom de la communauté</Text>
+            <TextInput
+              placeholder="Nom de la communauté"
+              autoCapitalize="none"
+            />
           </View>
         </TouchableOpacity> 
         <Text>Nom de communauté libre</Text>
