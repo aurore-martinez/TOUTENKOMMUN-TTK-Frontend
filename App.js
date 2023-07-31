@@ -13,6 +13,7 @@ import ChatScreen from './screens/chat/ChatScreen';
 
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { useFonts } from 'expo-font';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -59,6 +60,15 @@ const TabNavigator = () => {
 };
 
 export default function App() {
+	const [fontsLoaded] = useFonts({
+		'Tuffy-Regular': require('./assets/fonts/Tuffy-Regular.ttf'),
+    'Tuffy-Bold': require('./assets/fonts/Tuffy-Bold.ttf')
+	});
+
+	if (!fontsLoaded) {
+		return null;
+	}
+
 	return (
 		<NavigationContainer>
 			<Stack.Navigator screenOptions={{ headerShown: false }}>
