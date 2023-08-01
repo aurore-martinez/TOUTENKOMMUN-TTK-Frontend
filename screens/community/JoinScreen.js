@@ -2,11 +2,36 @@ import { Platform, SafeAreaView, StatusBar, TouchableOpacity, Modal } from 'reac
 import { useState } from 'react';
 import { StyleSheet, Text, View, TextInput } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-
+import { BACKEND_URL } from '../../Constants';
+import { useSelector } from 'react-redux';
 
 export default function JoinScreen({ navigation }) {
 
   const [isModalVisible, setModalVisible] = useState(false);
+  const [name, setName] = useState("");
+  const [accessCode, setAcessCode] = useState("");
+
+  const token = useSelector((state) => state.users.token);
+
+  const handleJoin = async () => {
+		if (name !== "" && accessCode !== "") {
+			const response = await fetch(`${BACKEND_URL}/communities/join`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name, accessCode, token })
+			});
+
+			const existingCommunity = await response.json();
+			if (existingCommunity.result) {
+				setName("");
+				setAcessCode("");
+        openModal();
+			} else {
+				console.log('Error', existingCommunity.error);
+			}
+		}
+	};    
+
 
   const openModal = () => {
     setModalVisible(true);
@@ -38,6 +63,8 @@ export default function JoinScreen({ navigation }) {
             <TextInput
               placeholder="Nom de la communauté"
               autoCapitalize="none"
+              value={name} 
+              onChangeText={(e) => setName(e.trim())}
             />
           </View>
         </TouchableOpacity> 
@@ -49,13 +76,15 @@ export default function JoinScreen({ navigation }) {
             <TextInput
               placeholder="Code d'accès"
               autoCapitalize="none"
+              value={accessCode} 
+              onChangeText={(e) => setAcessCode(e.trim())}
             />
           </View>
         </TouchableOpacity> 
         </View>
 
         <View style={styles.btnValidateContent}>
-          <TouchableOpacity style={styles.btnValidate}  onPress={openModal}>
+          <TouchableOpacity style={styles.btnValidate} onPress={() => handleJoin()}>
           {/* onPress={() => navigation.navigate("Prêt") */}
             <FontAwesome style={styles.handIcon} name='hand-o-right' size={20} color='#353639'/>
             <Text style={styles.btnTextValidate}>Valider</Text>
@@ -112,8 +141,8 @@ export default function JoinScreen({ navigation }) {
         <View style={styles.modalBtnContent}>
         {/* Bouton pour rejoindre */}
         <TouchableOpacity style={styles.joinButton} onPress={() => {
-          // Ajoutez ici le code pour gérer l'ouverture de l'application d'e-mail avec les détails de votre communauté
-          closeModal(); // Fermez la modal après avoir choisi l'option e-mail
+          navigation.navigate('TabNavigator', { screen: 'Prêt' });
+          closeModal();
         }}>
           <FontAwesome style={styles.ppIcon} name='arrow-circle-right' size={20} color='#F8FCFB'/>
           <Text style={styles.joinButtonText}>Rejoindre</Text>
@@ -327,7 +356,7 @@ const styles = StyleSheet.create({
     textAlign: 'justify'
   },
   ppIcon: {
-    fontSize: '20',
+    fontSize: 20,
     fontWeight: 'bold',
     marginRight: 10
   },
