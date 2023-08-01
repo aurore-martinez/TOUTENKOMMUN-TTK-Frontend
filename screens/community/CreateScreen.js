@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Platform, SafeAreaView, StatusBar, KeyboardAvoidingView, TextInput, Modal } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-
-const BACKEND_URL = 'http://192.168.10.132:3000';
+import { BACKEND_URL } from '../../Constants';
 
 export default function CreateScreen({ navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
