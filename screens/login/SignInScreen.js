@@ -8,6 +8,7 @@ import { login } from '../../reducers/users';
 export default function SignInScreen({ navigation }) {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [emailError, setEmailError] = useState(false);
 
 	const dispatch = useDispatch();
 
@@ -30,6 +31,7 @@ export default function SignInScreen({ navigation }) {
 				navigation.navigate('TabNavigator', { screen: 'Communauté' });
 			} else {
 				console.log('Error', hasAccount.error);
+				setEmailError(true);
 			}
 		}
 	};
@@ -59,7 +61,7 @@ export default function SignInScreen({ navigation }) {
 						<FontAwesome style={styles.userIcon} name='user' size={20} color='#353639' />
 						<TextInput style={{ width: 225 }} placeholder="Email" placeholderTextColor='#353639' autoCapitalize='none' inputMode='email' value={email} onChangeText={(e) => setEmail(e.trim())} />
 					</View>
-
+					{emailError && <Text style={styles.error}>Adresse email invalide</Text>}
 					<View style={styles.mdpContent}>
 						<FontAwesome style={styles.mdpIcon} name='lock' size={20} color='#353639' />
 						<TextInput style={{ width: 225 }} placeholder="Mot de passe" placeholderTextColor='#353639' value={password} secureTextEntry={true} onChangeText={(e) => setPassword(e.trim())} />
@@ -250,4 +252,7 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 		marginRight: 10
 	},
+	error: {
+		color: 'red',
+	  },
 });
