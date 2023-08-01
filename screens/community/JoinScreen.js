@@ -1,5 +1,5 @@
 import { Platform, SafeAreaView, StatusBar, TouchableOpacity, Modal } from 'react-native';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, Text, View, TextInput } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { BACKEND_URL } from '../../Constants';
@@ -10,9 +10,18 @@ export default function JoinScreen({ navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
   const [name, setName] = useState("");
   const [accessCode, setAcessCode] = useState("");
+  const [localisation, setLocalisation] = useState("");
+  const [description, setDescription] = useState("");
+
+  // utiliser un useRef pour vider les champs car on devait les réutiliser sur la modal
+  const nameRef = useRef(null);
+  const codeRef = useRef(null);
 
   const token = useSelector((state) => state.users.token);
 
+  	/**
+	 * Fonction envoyant le nom et le accessCode au backend
+	 */
   const handleJoin = async () => {
 		if (name !== "" && accessCode !== "") {
 			const response = await fetch(`${BACKEND_URL}/communities/join`, {
@@ -23,8 +32,10 @@ export default function JoinScreen({ navigation }) {
 
 			const existingCommunity = await response.json();
 			if (existingCommunity.result) {
-				setName("");
-				setAcessCode("");
+        nameRef.current.clear();
+        codeRef.current.clear();
+        setLocalisation(existingCommunity.localisation);
+        setDescription(existingCommunity.description);
         openModal();
 			} else {
 				console.log('Error', existingCommunity.error);
@@ -59,11 +70,11 @@ export default function JoinScreen({ navigation }) {
           activeOpacity={0.8}
         >
           <View style={styles.input}>
-            <FontAwesome style={styles.icon} name="users" size='20' color='black' />
+            <FontAwesome style={styles.icon} name="users" size={20} color='black' />
             <TextInput
               placeholder="Nom de la communauté"
               autoCapitalize="none"
-              value={name} 
+              ref={nameRef}
               onChangeText={(e) => setName(e.trim())}
             />
           </View>
@@ -72,11 +83,11 @@ export default function JoinScreen({ navigation }) {
           activeOpacity={0.8}
         >
           <View style={styles.input}>
-            <FontAwesome style={styles.icon} name="lock" size='20' color='black' />
+            <FontAwesome style={styles.icon} name="lock" size={20} color='black' />
             <TextInput
               placeholder="Code d'accès"
               autoCapitalize="none"
-              value={accessCode} 
+              ref={codeRef}
               onChangeText={(e) => setAcessCode(e.trim())}
             />
           </View>
@@ -135,9 +146,9 @@ export default function JoinScreen({ navigation }) {
   <Modal visible={isModalVisible} animationType="slide" transparent={true}>
     <View style={styles.modalContainer}>
       <View style={styles.modalContent}>
-        <Text style={styles.titleh3}>Communauté : XXX</Text>
-        <Text style={styles.titleh3}>Localisation : XXX</Text>
-        <Text style={styles.titleh3}>Description : </Text><Text style={styles.titleh4}>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."" </Text>
+        <Text style={styles.titleh3}>Communauté : {name}</Text>
+        <Text style={styles.titleh3}>Localisation : {localisation}</Text>
+        <Text style={styles.titleh3}>Description : </Text><Text style={styles.titleh4}>{description}</Text>
         <View style={styles.modalBtnContent}>
         {/* Bouton pour rejoindre */}
         <TouchableOpacity style={styles.joinButton} onPress={() => {
