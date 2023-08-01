@@ -18,6 +18,14 @@ import { useFonts } from 'expo-font';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import users from './reducers/users';
+
+const store = configureStore({
+  reducer: { users },
+});
+
 /**
  * La liste des écrans de la tab "Communauté"
  * @returns void
@@ -47,9 +55,9 @@ const TabNavigator = () => {
 					return <FontAwesome name="comments-o" size={size} color={color} />
 				}
 			},
-				tabBarActiveTintColor: '#2196f3',
-				tabBarInactiveTintColor: 'gray',
-				headerShown: false,
+			tabBarActiveTintColor: '#2196f3',
+			tabBarInactiveTintColor: 'gray',
+			headerShown: false,
 		})}>
 			<Tab.Screen name="Profil" component={ProfileScreen} />
 			<Tab.Screen name="Prêt" component={ListAndMapScreen} />
@@ -62,8 +70,8 @@ const TabNavigator = () => {
 export default function App() {
 	const [fontsLoaded] = useFonts({
 		'Tuffy-Regular': require('./assets/fonts/Tuffy-Regular.ttf'),
-    'Tuffy-Bold': require('./assets/fonts/Tuffy-Bold.ttf'),
-    'Tuffy-Italic': require('./assets/fonts/Tuffy-Italic.ttf')
+		'Tuffy-Bold': require('./assets/fonts/Tuffy-Bold.ttf'),
+		'Tuffy-Italic': require('./assets/fonts/Tuffy-Italic.ttf')
 	});
 
 	if (!fontsLoaded) {
@@ -71,12 +79,14 @@ export default function App() {
 	}
 
 	return (
-		<NavigationContainer>
-			<Stack.Navigator screenOptions={{ headerShown: false }}>
-				<Stack.Screen name="SignIn" component={SignInScreen} />
-				<Stack.Screen name="SignUp" component={SignUpScreen} />
-				<Stack.Screen name="TabNavigator" component={TabNavigator} />
-			</Stack.Navigator>
-		</NavigationContainer>
+		<Provider store={store}>
+			<NavigationContainer>
+				<Stack.Navigator screenOptions={{ headerShown: false }}>
+					<Stack.Screen name="SignIn" component={SignInScreen} />
+					<Stack.Screen name="SignUp" component={SignUpScreen} />
+					<Stack.Screen name="TabNavigator" component={TabNavigator} />
+				</Stack.Navigator>
+			</NavigationContainer>
+		</Provider>
 	);
 }

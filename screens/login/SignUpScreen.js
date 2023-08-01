@@ -1,7 +1,54 @@
 import { Platform, SafeAreaView, StatusBar, TouchableOpacity, KeyboardAvoidingView, StyleSheet, Text, View, TextInput } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { useDispatch } from 'react-redux';
+import { useState } from 'react';
+import { login } from '../../reducers/users';
+import { BACKEND_URL } from '../../Constants';
 
 export default function SignUpScreen({ navigation }) {
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [username, setUsername] = useState("");  
+  const [phone, setPhone] = useState(""); 
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState(false);
+  const [password, setPassword] = useState("");
+
+	const dispatch = useDispatch();
+
+  	/**
+	 * Fonction envoyant les inputs saisies au backend
+	 */
+
+    const handleSignUp = async () => {
+      const validfield =
+      email !== "" && password !== "" && firstname !== "" && lastname !== "" && username !== "" && phone !== "";
+
+      if (validfield) {
+        const response = await fetch(`${BACKEND_URL}/users/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, firstname, lastname, username, phone })
+        });
+  
+        const hasAccount = await response.json();
+        if (hasAccount.result) {
+          setFirstname("");
+          setLastname("");
+          setUsername("");
+          setPhone("");
+          setEmail("");
+          setPassword("");
+          dispatch(login(hasAccount.token));
+          navigation.navigate('TabNavigator', { screen: 'Communauté' });
+        } else {
+          console.log('Error', hasAccount.error);
+          setEmailError(true);
+        }
+      }
+    };
+
+
   return (
     <SafeAreaView style={styles.container} >
 
@@ -39,10 +86,10 @@ export default function SignUpScreen({ navigation }) {
             // keyboardType="email-address" //https://reactnative.dev/docs/textinput#keyboardtype pour les emails/numbers
             textContentType="name" // https://reactnative.dev/docs/textinput#textcontenttype-ios
             autoComplete="name" // https://reactnative.dev/docs/textinput#autocomplete-android
-            // onChangeText={(value) => setEmail(value)}
-            // value={email}
-            // style={styles.input}
+            onChangeText={(value) => setFirstname(value.trim())}
+            value={firstname}
             placeholderTextColor='#353639'
+            style={{ width: 225 }}
             />
           </View>
           <View style={styles.input}>
@@ -52,9 +99,10 @@ export default function SignUpScreen({ navigation }) {
               autoCapitalize="none" 
               textContentType="name" 
               autoComplete="family-name" 
-              // onChangeText={(value) => setEmail(value)}
-              // value={email}
+              onChangeText={(value) => setLastname(value.trim())}
+              value={lastname}
               placeholderTextColor='#353639'
+              style={{ width: 225 }}
             />
             </View>
             <View style={styles.input}>
@@ -64,10 +112,25 @@ export default function SignUpScreen({ navigation }) {
               autoCapitalize="none" 
               textContentType="name" 
               autoComplete="family-name" 
-              // onChangeText={(value) => setEmail(value)}
-              // value={email}
+              onChangeText={(value) => setUsername(value.trim())}
+              value={username}
               placeholderTextColor='#353639'
+              style={{ width: 225 }}
             />
+            </View>
+            <View style={styles.input}>
+              <FontAwesome name='phone' size={20} color='#353639' style={styles.icon} />
+              <TextInput
+                placeholder="Téléphone"
+                autoCapitalize="none" 
+                textContentType="telephoneNumber" 
+                autoComplete="tel" 
+                inputMode='tel'
+                onChangeText={(value) => setPhone(value.trim())}
+                value={phone}
+                placeholderTextColor='#353639'
+                style={{ width: 225 }}
+              />
             </View>
             <View style={styles.input}>
               <FontAwesome name='at' size={20} color='#353639' style={styles.icon} />
@@ -77,40 +140,33 @@ export default function SignUpScreen({ navigation }) {
                 keyboardType="email-address"
                 textContentType="emailAddress"
                 autoComplete="email"
-                // onChangeText={(value) => setEmail(value)}
-                // value={email}
+                inputMode='email'
+                onChangeText={(value) => setEmail(value.trim())}
+                value={email}
                 placeholderTextColor='#353639'
+                style={{ width: 225 }}
               />
+              {emailError && <Text style={styles.error}>Adresse email invalide</Text>}
             </View>
-          {/* {emailError && <Text style={styles.error}>Invalid email address</Text>} */}
-          <View style={styles.input}>
+            <View style={styles.input}>
               <FontAwesome name='lock' size={20} color='#353639' style={styles.icon} />
               <TextInput
                   placeholder="Mot de passe"
                   autoCapitalize="none"
                   textContentType="password" 
                   autoComplete="new-password" 
-                  // onChangeText={(value) => setEmail(value)}
-                  // value={email}
+                  secureTextEntry={true}
+                  onChangeText={(value) => setPassword(value.trim())}
+                  value={password}
                   placeholderTextColor='#353639'
+                  style={{ width: 225 }}
                 />
-          </View>
-          <View style={styles.input}>
-              <FontAwesome name='phone' size={20} color='#353639' style={styles.icon} />
-              <TextInput
-                placeholder="Téléphone"
-                autoCapitalize="none" 
-                textContentType="telephoneNumber" 
-                autoComplete="tel" 
-                // onChangeText={(value) => setEmail(value)}
-                // value={email}
-                placeholderTextColor='#353639'
-              />
-          </View>
+            </View>
+
           </View>
 
           <View  style={styles.buttonContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate("TabNavigator")} style={styles.button} >
+        <TouchableOpacity onPress={handleSignUp} style={styles.button} >
           <FontAwesome name='hand-o-right' size={20} color='#ffffff' style={styles.icon} />
           <Text style={styles.textButton}>Valider</Text>
         </TouchableOpacity>
@@ -261,5 +317,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height: '5%'
-  }
+  },
+  error: {
+    marginTop: 10,
+    color: 'red',
+  },
 });
