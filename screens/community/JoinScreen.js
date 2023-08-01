@@ -61,7 +61,7 @@ export default function JoinScreen({ navigation }) {
       <View style={styles.comuContainer}>
         <View style={styles.row}>
           <TouchableOpacity>
-            <View>
+            <View style={styles.iconCom}>
             <FontAwesome  name='home' size={20} color='#353639'/>
             </View>
             <View style={styles.textContainer}>
@@ -189,6 +189,7 @@ const styles = StyleSheet.create({
   },
   comuContainer: {
     backgroundColor : 'grey',
+    height: '100%',
     padding: 10,
   },
   row : {
@@ -196,5 +197,21 @@ const styles = StyleSheet.create({
     backgroundColor : 'yellow',
     borderColor : 'black',
     borderWidth: 1,
+    borderRadius: 50,
+    height: '30%',
+    marginTop: 20,
+    marginBottom: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
+    
   },
+  iconCom: {
+    borderColor: 'grey',
+    borderWidth: 1,
+    borderRadius: '50%',
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
+    alignItems: 'center'
+  } 
 });
