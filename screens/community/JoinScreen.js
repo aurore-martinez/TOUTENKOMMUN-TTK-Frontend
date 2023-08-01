@@ -1,9 +1,21 @@
-import { Platform, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native';
+import { Platform, SafeAreaView, StatusBar, TouchableOpacity, Modal } from 'react-native';
+import { useState } from 'react';
 import { StyleSheet, Text, View, TextInput } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 
 export default function JoinScreen({ navigation }) {
+
+  const [isModalVisible, setModalVisible] = useState(false);
+
+  const openModal = () => {
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
         <View style={styles.header}>
@@ -14,7 +26,6 @@ export default function JoinScreen({ navigation }) {
         <View style={styles.contentTop}>
         
         <View style={styles.titleContent}>
-        <Text>Screen Join!</Text>
         <Text style={styles.h5}>Rejoindre ma communauté</Text>
         </View>
 
@@ -44,7 +55,8 @@ export default function JoinScreen({ navigation }) {
         </View>
 
         <View style={styles.btnValidateContent}>
-          <TouchableOpacity style={styles.btnValidate} onPress={() => navigation.navigate("Prêt")}>
+          <TouchableOpacity style={styles.btnValidate}  onPress={openModal}>
+          {/* onPress={() => navigation.navigate("Prêt") */}
             <FontAwesome style={styles.handIcon} name='hand-o-right' size={20} color='#353639'/>
             <Text style={styles.btnTextValidate}>Valider</Text>
           </TouchableOpacity>
@@ -55,34 +67,66 @@ export default function JoinScreen({ navigation }) {
 
       <View style={styles.contentBottom}>
         <View style={styles.titleContent}>
-        <Text>Communauté(s) suggérée(s)</Text>
+        <Text style={styles.h5}>Communauté(s) suggérée(s)</Text>
       </View>
 
       <View style={styles.comuContainer}>
-        <View style={styles.row}>
-          <TouchableOpacity>
+
+        <TouchableOpacity activeOpacity={0.8} onPress={openModal}>
+          <View style={styles.row}>
             <View style={styles.iconCom}>
-            <FontAwesome  name='home' size={20} color='#353639'/>
+              <FontAwesome  name='home' size={20} color='#353639'/>
             </View>
+
             <View style={styles.textContainer}>
-              <Text>La familia</Text>
-              <Text>Membres :XX</Text>
+              <Text style={styles.titleh3}>La familia</Text>
+              <Text style={styles.titleh3}>Membres : XX</Text>
             </View>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.row}>
-          <TouchableOpacity>
-            <FontAwesome  name='home' size={20} color='#353639'/>
-            <Text>Poto Compoto</Text>
-            <Text>Membres :XX</Text>
-          </TouchableOpacity>
-        </View>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity activeOpacity={0.8} onPress={openModal}>
+          <View style={styles.row}>
+            <View style={styles.iconCom}>
+              <FontAwesome  name='home' size={20} color='#353639'/>
+            </View>
+
+            <View style={styles.textContainer}>
+              <Text style={styles.titleh3}>Poto Compoto</Text>
+              <Text style={styles.titleh3}>Membres : XX</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
       </View>
     
     </View>
 
+    {Modal}
+  <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+    <View style={styles.modalContainer}>
+      <View style={styles.modalContent}>
+        <Text style={styles.titleh3}>Communauté : XXX</Text>
+        <Text style={styles.titleh3}>Localisation : XXX</Text>
+        <Text style={styles.titleh3}>Description : </Text><Text style={styles.titleh4}>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."" </Text>
+        <View style={styles.modalBtnContent}>
+        {/* Bouton pour rejoindre */}
+        <TouchableOpacity style={styles.joinButton} onPress={() => {
+          // Ajoutez ici le code pour gérer l'ouverture de l'application d'e-mail avec les détails de votre communauté
+          closeModal(); // Fermez la modal après avoir choisi l'option e-mail
+        }}>
+          <FontAwesome style={styles.ppIcon} name='arrow-circle-right' size={20} color='#F8FCFB'/>
+          <Text style={styles.joinButtonText}>Rejoindre</Text>
+        </TouchableOpacity>
+    </View>
+    {/* Bouton pour fermer la modal */}
+    <TouchableOpacity onPress={closeModal}>
+      <Text style={styles.closeText}>Fermer</Text>
+    </TouchableOpacity>
+  </View>
+</View>
+  </Modal>
       <StatusBar style="auto" />
-
     </SafeAreaView>
   );
 }
@@ -130,13 +174,13 @@ const styles = StyleSheet.create({
   },
   handIcon: {
     color: 'white',
-    fontSize: '20',
+    fontSize: 20,
     fontWeight: 'bold',
     marginRight: 10
   },
   btnTextValidate: {
     color: 'white',
-    fontSize: '20',
+    fontSize: 20,
     fontWeight: 'bold',
     marginRight: 16
   },
@@ -161,6 +205,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginLeft: 'auto',
     marginRight: 'auto',
+    marginBottom: '2%'
   },
   inputContainer: {
     justifyContent: 'space-evenly',
@@ -185,33 +230,105 @@ const styles = StyleSheet.create({
     marginRight: '3%',
   },
   titleContent:  {
-    alignItems : 'center'
+    alignItems : 'center',
+    justifyContent: 'center',
+    marginTop: '3%'
   },
   comuContainer: {
-    backgroundColor : 'grey',
+    backgroundColor : '#F8FCFB',
     height: '100%',
     padding: 10,
-  },
-  row : {
-    flexDirection :'row',
-    backgroundColor : 'yellow',
-    borderColor : 'black',
-    borderWidth: 1,
-    borderRadius: 50,
-    height: '30%',
-    marginTop: 20,
-    marginBottom: 20,
-    paddingLeft: 20,
-    paddingRight: 20,
     
   },
+  row : {
+    backgroundColor : '#F8FCFB',
+    borderColor : '#198EA5',
+    borderWidth: 2,
+    borderRadius: 50,
+    //height: '30%',
+    marginTop: 20,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
   iconCom: {
-    borderColor: 'grey',
+    borderColor: '#353639',
     borderWidth: 1,
     borderRadius: '50%',
     width: 70,
     height: 70,
     justifyContent: 'center',
-    alignItems: 'center'
-  } 
+    alignItems: 'center',
+    backgroundColor: '#EEFCFF',
+  },
+  textContainer: {
+    marginLeft: '10%',
+    justifyContent: 'space-evenly',
+  },
+  titleh3: {
+    fontSize: 18,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#F8FCFB',
+    padding: 20,
+    borderRadius: 10,
+    marginLeft: 25,
+    marginRight: 25,
+  },
+  closeText: {
+    color: '#198EA5',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  modalBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+  },
+ joinButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '40%',
+    backgroundColor: '#198EA5',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  joinButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  smsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '40%',
+    backgroundColor: '#198EA5',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  smsButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  titleh4 : {
+    textAlign: 'justify'
+  },
+  ppIcon: {
+    fontSize: '20',
+    fontWeight: 'bold',
+    marginRight: 10
+  },
 });
