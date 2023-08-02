@@ -1,19 +1,70 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Platform, SafeAreaView, StatusBar, KeyboardAvoidingView, TextInput, Modal } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { BACKEND_URL } from '../../Constants';
 
 export default function CreateScreen({ navigation }) {
-
   const [isModalVisible, setModalVisible] = useState(false);
+  const [communityName, setCommunityName] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
 
-  const openModal = () => {
+  const [accessCode, setAccessCode] = useState("");
+
+  const openModal = (name, code) => {
     setModalVisible(true);
+    setCommunityName(name);
+    setAccessCode(code);
   };
 
   const closeModal = () => {
     setModalVisible(false);
+    resetCommunityName();
+  };
+
+  const resetCommunityName = () => {
+    setCommunityName('');
+  };
+
+  const handlePrivateButtonPress = () => {
+    setIsPrivate(true);
+    setIsPublic(false);
+  };
+
+  const handlePublicButtonPress = () => {
+    setIsPrivate(false);
+    setIsPublic(true);
+  };
+
+  const createCommunity = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/communities/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: communityName,
+          localisation: 'Your community location',
+          description: 'Your community description',
+          photo: 'Your community photo URL',
+          isPrivate: isPrivate, 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.result) {
+        console.log('La commu est créée!');
+        console.log(data);
+        openModal(communityName, data.accessCode);
+      } else {
+        console.log('Error:', data.error);
+      }
+    } catch (error) {
+      console.log('Error:', error.message);
+    }
   };
 
   return (
@@ -21,68 +72,72 @@ export default function CreateScreen({ navigation }) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
-          <FontAwesome style={styles.userIcon} name='user'/>
+          <FontAwesome style={styles.userIcon} name='user' />
         </View>
         <View style={styles.upperText}>
           <Text style={styles.h5}>Créer ma communauté</Text>
         </View>
         <View style={styles.inputContent}>
           <View style={styles.inputCommuContent}>
-            <FontAwesome style={styles.commuIcon} name='users' size={20} color='#353639'/>
-            <TextInput placeholder="Nom communauté" placeholderTextColor='#353639'/>
+            <FontAwesome style={styles.commuIcon} name='users' size={20} color='#353639' />
+            <TextInput
+              placeholder="Nom communauté"
+              placeholderTextColor='#353639'
+              value={communityName}
+              onChangeText={(text) => setCommunityName(text.trim())}
+            />
           </View>
           <View style={styles.nameCommuText}>
             <Text style={styles.commuText}>Nom de communauté libre</Text>
           </View>
         </View>
         <View style={styles.btnConnect}>
-          <TouchableOpacity style={styles.btnPrive} activeOpacity={0.8}>
-           <FontAwesome style={styles.ppIcon} name='lock' size={20} color='#198EA5'/>
-           <Text style={styles.textBtnPrive}>Privé</Text>
+          <TouchableOpacity
+            style={[styles.btnPrive, isPrivate ? styles.btnActive : null]}
+            activeOpacity={0.8}
+            onPress={handlePrivateButtonPress}
+          >
+            <FontAwesome style={styles.ppIcon} name='lock' size={20} color={isPrivate ? '#F8FCFB' : '#198EA5'} />
+            <Text style={[styles.textBtnPrive, isPrivate ? styles.textActive : null]}>Privé</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.btnPublic} activeOpacity={0.8}>
-          <FontAwesome5 style={styles.ppIcon} name='door-open' size={20} color='#198EA5'/>
-            <Text style={styles.textBtnPublic}>Public</Text>
+          <TouchableOpacity
+            style={[styles.btnPublic, isPublic ? styles.btnActive : null]}
+            activeOpacity={0.8}
+            onPress={handlePublicButtonPress}
+          >
+            <FontAwesome5 style={styles.ppIcon} name='door-open' size={20} color={isPublic ? '#F8FCFB' : '#198EA5'} />
+            <Text style={[styles.textBtnPublic, isPublic ? styles.textActive : null]}>Public</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.btnCreateContent}>  
-          <TouchableOpacity style={styles.btnCreate} onPress={openModal}>
-            <FontAwesome style={styles.ppIcon} name='user-plus' size={20} color='#F8FCFB'/>
+        <View style={styles.btnCreateContent}>
+          <TouchableOpacity style={styles.btnCreate} onPress={createCommunity}>
+            <FontAwesome style={styles.ppIcon} name='user-plus' size={20} color='#F8FCFB' />
             <Text style={styles.btnTextCreate}>Créer</Text>
           </TouchableOpacity>
         </View>
-
-          {Modal}
-  <Modal visible={isModalVisible} animationType="slide" transparent={true}>
-    <View style={styles.modalContainer}>
-      <View style={styles.modalContent}>
-        <Text>Bravo, votre communauté <Text style={{fontWeight: "bold"}}>"Carré comme un Kiri, ma moula"</Text> est prête ! Maintenant, invitez vos amis à vous rejoindre avec ce code : <Text style={{fontWeight: "bold"}}>KIRI</Text></Text>
-        <View style={styles.modalBtnContent}>
-        {/* Bouton pour l'e-mail */}
-        <TouchableOpacity style={styles.emailButton} onPress={() => {
-          // Ajoutez ici le code pour gérer l'ouverture de l'application d'e-mail avec les détails de votre communauté
-          closeModal(); // Fermez la modal après avoir choisi l'option e-mail
-        }}>
-          <FontAwesome style={styles.ppIcon} name='envelope-o' size={20} color='#F8FCFB'/>
-          <Text style={styles.emailButtonText}>E-mail</Text>
-        </TouchableOpacity>
-
-        {/* Bouton pour le SMS */}
-        <TouchableOpacity style={styles.smsButton} onPress={() => {
-          // Ajoutez ici le code pour gérer l'ouverture de l'application de SMS avec les détails de votre communauté
-          closeModal(); // Fermez la modal après avoir choisi l'option SMS
-        }}>
-          <FontAwesome style={styles.ppIcon} name='commenting' size={20} color='#F8FCFB'/>
-          <Text style={styles.smsButtonText}>SMS</Text>
-        </TouchableOpacity>
-        </View>
-        {/* Bouton pour fermer la modal */}
-        <TouchableOpacity onPress={closeModal}>
-          <Text style={styles.closeText}>Fermer</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </Modal>
+        <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text>Bravo, votre communauté <Text style={{ fontWeight: "bold" }}>"{communityName}"</Text> est prête ! Maintenant, invitez vos amis à vous rejoindre avec ce code : <Text style={{ fontWeight: "bold" }}>{accessCode}</Text></Text>
+              <View style={styles.modalBtnContent}>
+                <TouchableOpacity style={styles.emailButton} onPress={() => closeModal()}>
+                  <FontAwesome style={styles.ppIcon} name='envelope-o' size={20} color='#F8FCFB' />
+                  <Text style={styles.emailButtonText}>E-mail</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.smsButton} onPress={() => closeModal()}>
+                  <FontAwesome style={styles.ppIcon} name='commenting' size={20} color='#F8FCFB' />
+                  <Text style={styles.smsButtonText}>SMS</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity onPress={() => {
+                closeModal(); 
+                navigation.navigate('TabNavigator', { screen: 'Prêt' })
+              }}>
+                <Text style={styles.closeText}>Fermer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
         <StatusBar style="auto" />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -165,6 +220,7 @@ const styles = StyleSheet.create({
     borderRightColor: '#198EA5',
     borderRightWidth: 2,
     borderRadius: 10,
+    fontSize: 20,
   },
   btnPublic: {
     flexDirection: 'row',
@@ -182,21 +238,22 @@ const styles = StyleSheet.create({
     borderRightColor: '#198EA5',
     borderRightWidth: 2,
     borderRadius: 10,
+    fontSize: 20,
   },
   textBtnPrive: {
     color: '#198EA5',
-    fontSize: '20',
-    fontWeight: 'bold'
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   textBtnPublic: {
     color: '#198EA5',
-    fontSize: '20',
-    fontWeight: 'bold'
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   ppIcon: {
-    fontSize: '20',
+    fontSize: 20,
     fontWeight: 'bold',
-    marginRight: 10
+    marginRight: 10,
   },
   btnCreateContent: {
     height: '20%',
@@ -214,8 +271,8 @@ const styles = StyleSheet.create({
   },
   btnTextCreate: {
     color: '#F8FCFB',
-    fontSize: '20',
-    fontWeight: 'bold'
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   modalContainer: {
     flex: 1,
@@ -240,7 +297,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-evenly',
   },
- emailButton: {
+  emailButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -269,5 +326,12 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     fontWeight: 'bold',
+  },
+  btnActive: {
+    backgroundColor: '#198EA5',
+    borderWidth: 0,
+  },
+  textActive: {
+    color: '#F8FCFB',
   },
 });

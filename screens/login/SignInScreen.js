@@ -28,7 +28,7 @@ export default function SignInScreen({ navigation }) {
 				setEmail("");
 				setPassword("");
 				dispatch(login(hasAccount.token));
-				navigation.navigate('TabNavigator', { screen: 'Communauté' });
+				navigation.navigate('TabNavigator', { screen: 'Prêt' });
 			} else {
 				console.log('Error', hasAccount.error);
 				setEmailError(true);
