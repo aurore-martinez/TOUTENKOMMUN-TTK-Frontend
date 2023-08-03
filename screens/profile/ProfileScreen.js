@@ -18,7 +18,7 @@ import { BACKEND_URL } from "../../Constants";
 import { Camera, CameraType, FlashMode } from "expo-camera";
 import { useIsFocused } from "@react-navigation/native";
 import { useDispatch } from 'react-redux';
-import { addPhoto } from '../../reducers/users';
+import { addPhoto, logout } from '../../reducers/users';
 
 export default function ProfileScreen({ navigation }) {
 const dispatch = useDispatch();
@@ -29,7 +29,7 @@ const dispatch = useDispatch();
   // Les états du screen
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
-  const [photo, setPhoto] = useState("");
+  const [photo, setPhoto] = useState(null);
   const [showCommunities, setShowCommunities] = useState(false);
   const [showPrets, setShowPrets] = useState(false);
   const [showEmprunts, setShowEmprunts] = useState(false);
@@ -68,13 +68,13 @@ const dispatch = useDispatch();
       fetch(`${BACKEND_URL}/users/profil/${token}`)
         .then(res => res.json())
         .then(data => {
-          console.log("data user", data);
+          console.log("Utilisateur connecté :", data);
           setEmail(data.email);
           setUsername(data.username);
           setPhoto(data.photo);
-
           dispatch(addPhoto(data.photo));
-          UserCommu();
+          getUserObjects();
+          getUserCommu();
         });
     }
   }, [token]);
@@ -94,9 +94,9 @@ const dispatch = useDispatch();
   
         const dataObject = await response.json();
         if (dataObject.result) {
-          console.log('dataObject', dataObject.result);
+          console.log('Objet ajouté', dataObject.result);
         } else {
-          console.log('Error', dataObject.error);
+          console.log('Erreur objet non ajouté', dataObject.error);
         }
       }
     };
@@ -121,7 +121,7 @@ const dispatch = useDispatch();
         .then((data) => {
           data.result && dispatch(addPhoto(data.url));
           setPhoto(data.url);
-          console.log(data.url);
+          console.log("Photo enregistrée",data.url);
         })
     }
   };
@@ -135,7 +135,7 @@ const dispatch = useDispatch();
   };
 
   // Affichage d'objets d'un user
-  const fetchUserObjects = async () => {
+  const getUserObjects = async () => {
     try {
       const response = await fetch(
         `${BACKEND_URL}/users/profil/objects/${token}`
@@ -154,7 +154,7 @@ const dispatch = useDispatch();
   };
 
   // Affichage des commu d'un user
-  const UserCommu = async () => {
+  const getUserCommu = async () => {
      const response = await fetch(`${BACKEND_URL}/users/profil/${token}/communities`);
 
      const dataCommu = await response.json();
@@ -167,16 +167,25 @@ const dispatch = useDispatch();
      }
    }
 
-   
+   //fonction logout
+   const handleLogout = () => {
+    dispatch(logout());
 
-  // Si on a un token enregistré, on fetch les objets du user
-  useEffect(() => {
-    if (!token) {
-      console.log("error, user not found");
-    } else {
-      fetchUserObjects();
-    }
-  }, [token]);
+    setEmail("");
+    setUsername("");
+    setPhoto("");
+    setShowCommunities(false);
+    setShowPrets(false);
+    setShowEmprunts(false);
+    setShowObjets(false);
+    setUserObjects([]);
+    setName("");
+    setCommunities(null);
+  
+    navigation.navigate('SignIn');
+  };
+
+
 
   if (!hasCameraPermission || !isFocused || !isCameraActive) {
     return (
@@ -194,6 +203,9 @@ const dispatch = useDispatch();
             <Image source={{ uri: photo }} style={styles.photos}/>
             <Text style={styles.infoUser}>{username}</Text>
             <Text style={styles.infoUser}>{email}</Text>
+            <TouchableOpacity onPress={handleLogout}>
+              <FontAwesome name="sign-out" size={30} color="#198EA5" />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.menuContent}>
@@ -226,7 +238,7 @@ const dispatch = useDispatch();
             </TouchableOpacity>
             {showPrets && (
               <View style={styles.subMenuContent}>
-                {community}
+                {/* Contenu de l'historique des prêts */}
               </View>
             )}
 

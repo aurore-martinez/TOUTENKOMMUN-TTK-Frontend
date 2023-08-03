@@ -16,8 +16,11 @@ export const userSlice = createSlice({
 		addPhoto: (state, action) => {
 			state.photo = action.payload;
 		},
+		logout: (state) => {
+			state.token = null;
+		  },
 	}
 });
 
-export const { login, addPhoto } = userSlice.actions;
+export const { login, addPhoto, logout } = userSlice.actions;
 export default userSlice.reducer;
