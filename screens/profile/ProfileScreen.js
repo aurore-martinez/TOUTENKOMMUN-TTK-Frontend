@@ -28,6 +28,7 @@ export default function ProfileScreen({ navigation }) {
   const [showPrets, setShowPrets] = useState(false);
   const [showEmprunts, setShowEmprunts] = useState(false);
   const [showObjets, setShowObjets] = useState(false);
+  const [name, setName] = useState("");
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [isCameraActive, setCameraActive] = useState(false);
@@ -59,12 +60,35 @@ export default function ProfileScreen({ navigation }) {
       fetch(`${BACKEND_URL}/users/profil/${token}`)
         .then(res => res.json())
         .then(data => {
-          console.log(data);
+          console.log("data user", data);
           setEmail(data.email);
           setUsername(data.username);
         });
     }
   }, [token]);
+
+
+   	/**
+	 * Fonction ajout d'un objet
+	 */
+
+     const handleAddObject = async () => {
+       if (name !== "") {
+        const response = await fetch(`${BACKEND_URL}/users/profil/${token}/object`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+  
+        const dataObject = await response.json();
+        if (dataObject.result) {
+          console.log('dataObject', dataObject.result);
+        } else {
+          console.log('Error', dataObject.error);
+        }
+      }
+    };
+
 
   // Fonction pour prendre une photo avec la caméra
   const takePicture = async () => {
@@ -166,6 +190,8 @@ export default function ProfileScreen({ navigation }) {
                   style={styles.inputObjet}
                   placeholder="Nom objet"
                   placeholderTextColor='#353639'
+                  value={name}
+                  onChangeText={setName}
                 />
               </View>
               <View style={styles.modalInput}>
@@ -184,10 +210,11 @@ export default function ProfileScreen({ navigation }) {
                 <TouchableOpacity
                   style={styles.addObjectButton}
                   onPress={() => {
-                    // Ajoutez ici le code pour gérer l'ajout de l'objet dans la communauté
+                    handleAddObject();
                     closeModal(); // Fermez la modal après avoir ajouté l'objet
                   }}
                 >
+                  
                   <FontAwesome
                     style={styles.ppIcon}
                     name='plus-square-o'
