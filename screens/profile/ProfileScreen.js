@@ -30,6 +30,7 @@ export default function ProfileScreen({ navigation }) {
   const [showObjets, setShowObjets] = useState(false);
   const [userObjects, setUserObjects] = useState([]);
   const [name, setName] = useState("");
+  const [communities, setCommunities] = useState(null);
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [isCameraActive, setCameraActive] = useState(false);
@@ -64,6 +65,7 @@ export default function ProfileScreen({ navigation }) {
           console.log("data user", data);
           setEmail(data.email);
           setUsername(data.username);
+          setCommunities(data.community)
         });
     }
   }, [token]);
@@ -112,11 +114,12 @@ export default function ProfileScreen({ navigation }) {
   const closeModal = () => {
     setModalVisible(false);
   };
+
   // Affichage d'objets d'un user
   const fetchUserObjects = async () => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/users/profil/${token}/objects`
+        `${BACKEND_URL}/users/profil/objects/${token}`
       );
       const data = await response.json();
 
@@ -130,6 +133,8 @@ export default function ProfileScreen({ navigation }) {
       console.error("Error fetching user objects:", error.message);
     }
   };
+
+   
 
   // Si on a un token enregistré, on fetch les objets du user
   useEffect(() => {
@@ -176,7 +181,11 @@ export default function ProfileScreen({ navigation }) {
             </TouchableOpacity>
             {showCommunities && (
               <View style={styles.subMenuContent}>
-                {/* Contenu de la liste communautés */}
+                {communities.map((community, i) => (
+                  <View key={i}>
+                    <Text>{community}</Text>
+                  </View>
+                ))}
               </View>
             )}
 
@@ -189,7 +198,7 @@ export default function ProfileScreen({ navigation }) {
             </TouchableOpacity>
             {showPrets && (
               <View style={styles.subMenuContent}>
-                {/* Contenu de l'historique des prêts */}
+                {community}
               </View>
             )}
 
@@ -215,9 +224,9 @@ export default function ProfileScreen({ navigation }) {
             </TouchableOpacity>
             {showObjets && (
               <View style={styles.subMenuContent}>
-                {userObjects.map((obj) => (
-                  <View key={obj._id} style={styles.objectItem}>
-                    <Text>{obj.name}</Text>
+                {userObjects.map((obj, i) => (
+                  <View key={i} style={styles.objectItem}>
+                    <Text>{obj}</Text>
                   </View>
                 ))}
               </View>
