@@ -9,6 +9,7 @@ import {
   View,
   TextInput,
   Modal,
+  Image,
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
@@ -16,14 +17,19 @@ import { useSelector } from "react-redux";
 import { BACKEND_URL } from "../../Constants";
 import { Camera, CameraType, FlashMode } from "expo-camera";
 import { useIsFocused } from "@react-navigation/native";
+import { useDispatch } from 'react-redux';
+import { addPhoto } from '../../reducers/users';
 
 export default function ProfileScreen({ navigation }) {
+const dispatch = useDispatch();
+
   // On recupère le token
   const token = useSelector((state) => state.users.token);
 
   // Les états du screen
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [photo, setPhoto] = useState("");
   const [showCommunities, setShowCommunities] = useState(false);
   const [showPrets, setShowPrets] = useState(false);
   const [showEmprunts, setShowEmprunts] = useState(false);
@@ -65,7 +71,10 @@ export default function ProfileScreen({ navigation }) {
           console.log("data user", data);
           setEmail(data.email);
           setUsername(data.username);
-          setCommunities(data.community)
+          setPhoto(data.photo);
+
+          dispatch(addPhoto(data.photo));
+          UserCommu();
         });
     }
   }, [token]);
@@ -104,6 +113,16 @@ export default function ProfileScreen({ navigation }) {
         name: "photo.jpg",
         type: "image/jpeg",
       });
+
+      fetch(`${BACKEND_URL}/${token}/cloudinary/upload`, {
+        method: 'POST',
+        body: formData,
+      }).then((response) => response.json())
+        .then((data) => {
+          data.result && dispatch(addPhoto(data.url));
+          setPhoto(data.url);
+          console.log(data.url);
+        })
     }
   };
 
@@ -134,6 +153,20 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
+  // Affichage des commu d'un user
+  const UserCommu = async () => {
+     const response = await fetch(`${BACKEND_URL}/users/profil/${token}/communities`);
+
+     const dataCommu = await response.json();
+
+     if (dataCommu.result) {
+       console.log('dataCommu', dataCommu.communities);
+       setCommunities(dataCommu.communities);
+     } else {
+       console.log('Error', dataCommu.error);
+     }
+   }
+
    
 
   // Si on a un token enregistré, on fetch les objets du user
@@ -157,13 +190,8 @@ export default function ProfileScreen({ navigation }) {
         {/*CONTENT*/}
         <View style={styles.pageContent}>
           <View style={styles.avatarContent}>
-            <FontAwesome5
-              onPress={camera}
-              style={styles.commuIcon}
-              name="user-circle"
-              size={150}
-              color="#198EA5"
-            />
+            <Text onPress={camera}>Edit</Text>
+            <Image source={{ uri: photo }} style={styles.photos}/>
             <Text style={styles.infoUser}>{username}</Text>
             <Text style={styles.infoUser}>{email}</Text>
           </View>
@@ -183,7 +211,7 @@ export default function ProfileScreen({ navigation }) {
               <View style={styles.subMenuContent}>
                 {communities.map((community, i) => (
                   <View key={i}>
-                    <Text>{community}</Text>
+                    <Text>{community.name}</Text>
                   </View>
                 ))}
               </View>
@@ -389,6 +417,12 @@ const styles = StyleSheet.create({
   },
   infoUser: {
     fontSize: 20,
+  },
+  photos: {
+    margin: 10,
+    width: 150,
+    height: 150,
+    borderRadius: 100
   },
   menuContent: {
     paddingHorizontal: 20,
