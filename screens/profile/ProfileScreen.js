@@ -169,8 +169,6 @@ const dispatch = useDispatch();
 
    //fonction logout
    const handleLogout = () => {
-    dispatch(logout());
-
     setEmail("");
     setUsername("");
     setPhoto("");
@@ -181,6 +179,7 @@ const dispatch = useDispatch();
     setUserObjects([]);
     setName("");
     setCommunities(null);
+    dispatch(logout());
   
     navigation.navigate('SignIn');
   };
