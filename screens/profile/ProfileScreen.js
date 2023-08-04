@@ -41,8 +41,10 @@ const dispatch = useDispatch();
   const [isModalPlusVisible, setModalPlusVisible] = useState(false);
   const [isCameraActive, setCameraActive] = useState(false);
   const [isModalCommunityVisible, setModalCommunityVisible] = useState(false);
-  const [selectedCommunity, setSelectedCommunity] = useState(null)
-
+  const [selectedCommunity, setSelectedCommunity] = useState(null);
+  const [isModalObjectVisible, setModalObjectVisible] = useState(false);
+  const [selectedObject, setSelectedObject] = useState(null);
+  const [isModalLogoutVisible, setModalLogoutVisible] = useState(false);
 
   const [hasCameraPermission, setHasCameraPermission] = useState(false);
   const [type, setType] = useState(Camera.Constants.Type.back);
@@ -130,10 +132,24 @@ const dispatch = useDispatch();
     }
   };
 
+  const openModalLogout = () => {
+    setModalLogoutVisible(true)
+  }
+
+  const closeModalLogout = () => {
+    setModalLogoutVisible(false)
+  }
+
   const openModalCommunity = (community) => {
     setModalCommunityVisible(true)
     setSelectedCommunity(community);
   };
+
+  const openModalObject = (obj) => {
+    setModalObjectVisible(true)
+    setSelectedObject(obj)
+    console.log(obj)
+  }
 
   const openModal = () => {
     setModalPlusVisible(true);
@@ -142,6 +158,7 @@ const dispatch = useDispatch();
   const closeModal = () => {
     setModalPlusVisible(false);
     setModalCommunityVisible(false);
+    setModalObjectVisible(false);
   };
 
   // Affichage d'objets d'un user
@@ -202,23 +219,22 @@ const dispatch = useDispatch();
         {/*HEADER*/}
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
-          <FontAwesome style={styles.userIcon} name="user" />
+          <FontAwesome style={styles.userIcon} name="user" onPress={openModalLogout}/>
         </View>
 
         {/*CONTENT*/}
         <View style={styles.pageContent}>
           <View style={styles.avatarContent}>
-            <Text onPress={camera}>Edit</Text>
-            {photo ? (
-            <Image source={{ uri: photo }} style={styles.photos} />
-            ) : (
-            <FontAwesome name="user-circle-o" size={150} color="#198EA5" />
+            <View style={styles.photoEdit}>
+              {photo ? (
+              <Image source={{ uri: photo }} style={styles.photos} />
+              ) : (
+              <FontAwesome name="user-circle-o" size={150} color="#198EA5" />
             )}
+            <FontAwesome name='pencil' size={30} color="#198EA5" onPress={camera} style={styles.pencilIcon}/>
+            </View>
             <Text style={styles.infoUser}>{username}</Text>
             <Text style={styles.infoUser}>{email}</Text>
-            <TouchableOpacity onPress={handleLogout}>
-              <FontAwesome name="sign-out" size={30} color="#198EA5" />
-            </TouchableOpacity>
           </View>
 
           <View style={styles.menuContent}>
@@ -279,13 +295,45 @@ const dispatch = useDispatch();
               <View style={styles.subMenuContent}>
                 {userObjects.map((obj, i) => (
                   <View key={i} style={styles.objectItem}>
-                    <Text>{obj}</Text>
+                    <Text onPress={() => openModalObject(obj)}>{obj}</Text>
                   </View>
                 ))}
               </View>
             )}
           </View>
         </View>
+
+        {/*MODAL LOGOUT*/}
+        <Modal
+          visible={isModalLogoutVisible}
+          animationType="slide"
+          transparent={true}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPressOut={closeModalLogout} // Ferme la modal lorsque vous cliquez en dehors d'elle
+            style={styles.modalContainer}
+          >
+            <TouchableOpacity activeOpacity={1} style={styles.modalLogoutContent}>
+              {/* Contenu de la modal */}
+              <View style={styles.modalBtnContent}>
+                {/* Bouton pour supprimer la communauté */}
+                <TouchableOpacity
+                  style={styles.deconnecterButton}
+                  onPress={handleLogout}
+                >                 
+                  <FontAwesome
+                    style={styles.ppIcon}
+                    name="sign-out"
+                    size={20}
+                    color="#F8FCFB"
+                  />
+                  <Text style={styles.smsButtonText}>Se déconnecter</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
 
         {/*MODAL AJOUT OBJET*/}
         <TouchableOpacity onPress={openModal} style={styles.addButton}>
@@ -396,6 +444,43 @@ const dispatch = useDispatch();
           </TouchableOpacity>
         </Modal>
 
+        {/*MODAL MES OBJETS*/}
+        <Modal
+          visible={isModalObjectVisible}
+          animationType="slide"
+          transparent={true}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPressOut={closeModal} // Ferme la modal lorsque vous cliquez en dehors d'elle
+            style={styles.modalContainer}
+          >
+            <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
+              {/* Contenu de la modal */}
+              <View style={styles.infoObj}>
+                <Text>Nom de l'objet : {selectedObject && selectedObject}</Text>
+              </View>
+              <View style={styles.modalBtnContent}>
+                {/* Bouton pour supprimer l'objet */}
+                <TouchableOpacity
+                  style={styles.desabonnerButton}
+                  onPress={() => {
+                    closeModal(); // Fermez la modal après avoir supprimé l'objet
+                  }}
+                >                 
+                  <FontAwesome
+                    style={styles.ppIcon}
+                    name="trash-o"
+                    size={20}
+                    color="#F8FCFB"
+                  />
+                  <Text style={styles.smsButtonText}>Supprimer</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
       </SafeAreaView>
     );
   }
@@ -497,7 +582,17 @@ const styles = StyleSheet.create({
     margin: 10,
     width: 150,
     height: 150,
-    borderRadius: 100
+    borderRadius: 100,
+    borderWidth: 3,
+    borderColor: "#198EA5",
+  },
+  photoEdit: {
+   flexDirection: 'row',
+   justifyContent: 'center',
+   marginRight: 5,
+  },
+  pencilIcon: {
+    marginLeft: -34,
   },
   menuContent: {
     paddingHorizontal: 20,
@@ -551,11 +646,31 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginLeft: 25,
     marginRight: 25,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   modalInput: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 10,
+  },
+  modalLogoutContent: {
+    backgroundColor: "#F8FCFB",
+    padding: 20,
+    borderRadius: 10,
+    marginLeft: 25,
+    marginRight: 25,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  deconnecterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "70%",
+    backgroundColor: "#198EA5",
+    padding: 10,
+    borderRadius: 5,
   },
   inputObjet: {
     height: 30,
@@ -650,5 +765,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
+  },
+  infoObj: {
+
   },
 });
