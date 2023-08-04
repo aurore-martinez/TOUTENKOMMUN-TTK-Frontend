@@ -1,7 +1,7 @@
 import { Platform, SafeAreaView, StatusBar, TouchableOpacity, KeyboardAvoidingView, StyleSheet, Text, View, TextInput } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useDispatch } from 'react-redux';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { login } from '../../reducers/users';
 import { BACKEND_URL } from '../../Constants';
 
@@ -16,6 +16,8 @@ export default function SignUpScreen({ navigation }) {
 
 	const dispatch = useDispatch();
 
+  const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
   	/**
 	 * Fonction envoyant les inputs saisies au backend
 	 */
@@ -24,7 +26,7 @@ export default function SignUpScreen({ navigation }) {
       const validfield =
       email !== "" && password !== "" && firstname !== "" && lastname !== "" && username !== "" && phone !== "";
 
-      if (validfield) {
+      if (validfield && EMAIL_REGEX.test(email)) {
         const response = await fetch(`${BACKEND_URL}/users/signup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -45,6 +47,8 @@ export default function SignUpScreen({ navigation }) {
           console.log('Error', hasAccount.error);
           setEmailError(true);
         }
+      } else {
+        setEmailError(true);
       }
     };
 
@@ -55,7 +59,6 @@ export default function SignUpScreen({ navigation }) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         
         <View style={styles.titleContainer}>
-        <Text>SCREEN : Login SignUp!</Text>
         <Text style={styles.titleh1}>Toutenkommun</Text>
         <Text style={styles.titleh2}>Créer un compte</Text>
         </View>
@@ -141,12 +144,15 @@ export default function SignUpScreen({ navigation }) {
                 textContentType="emailAddress"
                 autoComplete="email"
                 inputMode='email'
-                onChangeText={(value) => setEmail(value.trim())}
+                onChangeText={(value) => {
+                  setEmail(value.trim());
+                  setEmailError(false); // Clear email error when typing
+                }}
                 value={email}
                 placeholderTextColor='#353639'
                 style={{ width: 225 }}
               />
-              {emailError && <Text style={styles.error}>Adresse email invalide</Text>}
+              
             </View>
             <View style={styles.input}>
               <FontAwesome name='lock' size={20} color='#353639' style={styles.icon} />
@@ -162,7 +168,7 @@ export default function SignUpScreen({ navigation }) {
                   style={{ width: 225 }}
                 />
             </View>
-
+            {emailError && <Text style={styles.error}>Adresse email invalide</Text>}
           </View>
 
           <View  style={styles.buttonContainer}>
@@ -319,7 +325,7 @@ const styles = StyleSheet.create({
     height: '5%'
   },
   error: {
-    marginTop: 10,
+    // marginTop: 10,
     color: 'red',
   },
 });

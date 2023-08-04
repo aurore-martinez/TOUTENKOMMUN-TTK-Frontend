@@ -18,7 +18,7 @@ import { BACKEND_URL } from "../../Constants";
 import { Camera, CameraType, FlashMode } from "expo-camera";
 import { useIsFocused } from "@react-navigation/native";
 import { useDispatch } from 'react-redux';
-import { addPhoto } from '../../reducers/users';
+import { addPhoto, logout } from '../../reducers/users';
 
 export default function ProfileScreen({ navigation }) {
 const dispatch = useDispatch();
@@ -29,7 +29,7 @@ const dispatch = useDispatch();
   // Les états du screen
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
-  const [photo, setPhoto] = useState("");
+  const [photo, setPhoto] = useState(null);
   const [showCommunities, setShowCommunities] = useState(false);
   const [showPrets, setShowPrets] = useState(false);
   const [showEmprunts, setShowEmprunts] = useState(false);
@@ -38,8 +38,13 @@ const dispatch = useDispatch();
   const [name, setName] = useState("");
   const [communities, setCommunities] = useState(null);
 
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isModalPlusVisible, setModalPlusVisible] = useState(false);
   const [isCameraActive, setCameraActive] = useState(false);
+  const [isModalCommunityVisible, setModalCommunityVisible] = useState(false);
+  const [selectedCommunity, setSelectedCommunity] = useState(null);
+  const [isModalObjectVisible, setModalObjectVisible] = useState(false);
+  const [selectedObject, setSelectedObject] = useState(null);
+  const [isModalLogoutVisible, setModalLogoutVisible] = useState(false);
 
   const [hasCameraPermission, setHasCameraPermission] = useState(false);
   const [type, setType] = useState(Camera.Constants.Type.back);
@@ -68,13 +73,13 @@ const dispatch = useDispatch();
       fetch(`${BACKEND_URL}/users/profil/${token}`)
         .then(res => res.json())
         .then(data => {
-          console.log("data user", data);
+          console.log("Utilisateur connecté :", data);
           setEmail(data.email);
           setUsername(data.username);
           setPhoto(data.photo);
-
           dispatch(addPhoto(data.photo));
-          UserCommu();
+          getUserObjects();
+          getUserCommu();
         });
     }
   }, [token]);
@@ -94,9 +99,9 @@ const dispatch = useDispatch();
   
         const dataObject = await response.json();
         if (dataObject.result) {
-          console.log('dataObject', dataObject.result);
+          console.log('Objet ajouté', dataObject.result);
         } else {
-          console.log('Error', dataObject.error);
+          console.log('Erreur objet non ajouté', dataObject.error);
         }
       }
     };
@@ -121,21 +126,43 @@ const dispatch = useDispatch();
         .then((data) => {
           data.result && dispatch(addPhoto(data.url));
           setPhoto(data.url);
-          console.log(data.url);
+          console.log("Photo enregistrée",data.url);
+          setCameraActive(false);
         })
     }
   };
 
+  const openModalLogout = () => {
+    setModalLogoutVisible(true)
+  }
+
+  const closeModalLogout = () => {
+    setModalLogoutVisible(false)
+  }
+
+  const openModalCommunity = (community) => {
+    setModalCommunityVisible(true)
+    setSelectedCommunity(community);
+  };
+
+  const openModalObject = (obj) => {
+    setModalObjectVisible(true)
+    setSelectedObject(obj)
+    console.log(obj)
+  }
+
   const openModal = () => {
-    setModalVisible(true);
+    setModalPlusVisible(true);
   };
 
   const closeModal = () => {
-    setModalVisible(false);
+    setModalPlusVisible(false);
+    setModalCommunityVisible(false);
+    setModalObjectVisible(false);
   };
 
   // Affichage d'objets d'un user
-  const fetchUserObjects = async () => {
+  const getUserObjects = async () => {
     try {
       const response = await fetch(
         `${BACKEND_URL}/users/profil/objects/${token}`
@@ -154,7 +181,7 @@ const dispatch = useDispatch();
   };
 
   // Affichage des commu d'un user
-  const UserCommu = async () => {
+  const getUserCommu = async () => {
      const response = await fetch(`${BACKEND_URL}/users/profil/${token}/communities`);
 
      const dataCommu = await response.json();
@@ -167,16 +194,24 @@ const dispatch = useDispatch();
      }
    }
 
-   
+   //fonction logout
+   const handleLogout = () => {
+    setEmail("");
+    setUsername("");
+    setPhoto("");
+    setShowCommunities(false);
+    setShowPrets(false);
+    setShowEmprunts(false);
+    setShowObjets(false);
+    setUserObjects([]);
+    setName("");
+    setCommunities(null);
+    dispatch(logout());
+  
+    navigation.navigate('SignIn');
+  };
 
-  // Si on a un token enregistré, on fetch les objets du user
-  useEffect(() => {
-    if (!token) {
-      console.log("error, user not found");
-    } else {
-      fetchUserObjects();
-    }
-  }, [token]);
+
 
   if (!hasCameraPermission || !isFocused || !isCameraActive) {
     return (
@@ -184,14 +219,20 @@ const dispatch = useDispatch();
         {/*HEADER*/}
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
-          <FontAwesome style={styles.userIcon} name="user" />
+          <FontAwesome style={styles.userIcon} name="user" onPress={openModalLogout}/>
         </View>
 
         {/*CONTENT*/}
         <View style={styles.pageContent}>
           <View style={styles.avatarContent}>
-            <Text onPress={camera}>Edit</Text>
-            <Image source={{ uri: photo }} style={styles.photos}/>
+            <View style={styles.photoEdit}>
+              {photo ? (
+              <Image source={{ uri: photo }} style={styles.photos} />
+              ) : (
+              <FontAwesome name="user-circle-o" size={150} color="#198EA5" />
+            )}
+            <FontAwesome name='pencil' size={30} color="#198EA5" onPress={camera} style={styles.pencilIcon}/>
+            </View>
             <Text style={styles.infoUser}>{username}</Text>
             <Text style={styles.infoUser}>{email}</Text>
           </View>
@@ -211,7 +252,7 @@ const dispatch = useDispatch();
               <View style={styles.subMenuContent}>
                 {communities.map((community, i) => (
                   <View key={i}>
-                    <Text>{community.name}</Text>
+                    <Text onPress={() => openModalCommunity(community)}>{community.name}</Text>
                   </View>
                 ))}
               </View>
@@ -226,7 +267,7 @@ const dispatch = useDispatch();
             </TouchableOpacity>
             {showPrets && (
               <View style={styles.subMenuContent}>
-                {community}
+                {/* Contenu de l'historique des prêts */}
               </View>
             )}
 
@@ -254,7 +295,7 @@ const dispatch = useDispatch();
               <View style={styles.subMenuContent}>
                 {userObjects.map((obj, i) => (
                   <View key={i} style={styles.objectItem}>
-                    <Text>{obj}</Text>
+                    <Text onPress={() => openModalObject(obj)}>{obj}</Text>
                   </View>
                 ))}
               </View>
@@ -262,12 +303,44 @@ const dispatch = useDispatch();
           </View>
         </View>
 
-        {/*MODAL*/}
+        {/*MODAL LOGOUT*/}
+        <Modal
+          visible={isModalLogoutVisible}
+          animationType="slide"
+          transparent={true}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPressOut={closeModalLogout} // Ferme la modal lorsque vous cliquez en dehors d'elle
+            style={styles.modalContainer}
+          >
+            <TouchableOpacity activeOpacity={1} style={styles.modalLogoutContent}>
+              {/* Contenu de la modal */}
+              <View style={styles.modalBtnContent}>
+                {/* Bouton pour supprimer la communauté */}
+                <TouchableOpacity
+                  style={styles.deconnecterButton}
+                  onPress={handleLogout}
+                >                 
+                  <FontAwesome
+                    style={styles.ppIcon}
+                    name="sign-out"
+                    size={20}
+                    color="#F8FCFB"
+                  />
+                  <Text style={styles.smsButtonText}>Se déconnecter</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
+        {/*MODAL AJOUT OBJET*/}
         <TouchableOpacity onPress={openModal} style={styles.addButton}>
           <FontAwesome name="plus" style={styles.addButtonText} />
         </TouchableOpacity>
         <Modal
-          visible={isModalVisible}
+          visible={isModalPlusVisible}
           animationType="slide"
           transparent={true}
         >
@@ -308,6 +381,7 @@ const dispatch = useDispatch();
                     closeModal(); // Fermez la modal après avoir ajouté l'objet
                   }}
                 >
+
                   
                   <FontAwesome
                     style={styles.ppIcon}
@@ -321,6 +395,92 @@ const dispatch = useDispatch();
             </TouchableOpacity>
           </TouchableOpacity>
         </Modal>
+
+
+        {/*MODAL MES COMMUNAUTES*/}
+        <Modal
+          visible={isModalCommunityVisible}
+          animationType="slide"
+          transparent={true}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPressOut={closeModal} // Ferme la modal lorsque vous cliquez en dehors d'elle
+            style={styles.modalContainer}
+          >
+            <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
+              {/* Contenu de la modal */}
+              <View style={styles.modalInput}>
+                <Text>Communauté : {selectedCommunity && selectedCommunity.name}</Text>
+              </View>
+              <View style={styles.modalInput}>
+                <Text>Photo : </Text>
+                <TouchableOpacity onPress={camera} style={styles.cameraButton}>
+                  <FontAwesome name="camera" size={24} color="black" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.choixCommu}>
+                <Text>Code d'accès : {selectedCommunity && selectedCommunity.accessCode}</Text>
+                <Text>Description : {selectedCommunity && selectedCommunity.description}</Text>
+              </View>
+              <View style={styles.modalBtnContent}>
+                {/* Bouton pour supprimer la communauté */}
+                <TouchableOpacity
+                  style={styles.desabonnerButton}
+                  onPress={() => {
+                    closeModal(); // Fermez la modal après avoir ajouté l'objet
+                  }}
+                >                 
+                  <FontAwesome
+                    style={styles.ppIcon}
+                    name="user-times"
+                    size={20}
+                    color="#F8FCFB"
+                  />
+                  <Text style={styles.smsButtonText}>Se désabonner</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
+        {/*MODAL MES OBJETS*/}
+        <Modal
+          visible={isModalObjectVisible}
+          animationType="slide"
+          transparent={true}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPressOut={closeModal} // Ferme la modal lorsque vous cliquez en dehors d'elle
+            style={styles.modalContainer}
+          >
+            <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
+              {/* Contenu de la modal */}
+              <View style={styles.infoObj}>
+                <Text>Nom de l'objet : {selectedObject && selectedObject}</Text>
+              </View>
+              <View style={styles.modalBtnContent}>
+                {/* Bouton pour supprimer l'objet */}
+                <TouchableOpacity
+                  style={styles.desabonnerButton}
+                  onPress={() => {
+                    closeModal(); // Fermez la modal après avoir supprimé l'objet
+                  }}
+                >                 
+                  <FontAwesome
+                    style={styles.ppIcon}
+                    name="trash-o"
+                    size={20}
+                    color="#F8FCFB"
+                  />
+                  <Text style={styles.smsButtonText}>Supprimer</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
       </SafeAreaView>
     );
   }
@@ -422,7 +582,17 @@ const styles = StyleSheet.create({
     margin: 10,
     width: 150,
     height: 150,
-    borderRadius: 100
+    borderRadius: 100,
+    borderWidth: 3,
+    borderColor: "#198EA5",
+  },
+  photoEdit: {
+   flexDirection: 'row',
+   justifyContent: 'center',
+   marginRight: 5,
+  },
+  pencilIcon: {
+    marginLeft: -34,
   },
   menuContent: {
     paddingHorizontal: 20,
@@ -476,11 +646,31 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginLeft: 25,
     marginRight: 25,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   modalInput: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 10,
+  },
+  modalLogoutContent: {
+    backgroundColor: "#F8FCFB",
+    padding: 20,
+    borderRadius: 10,
+    marginLeft: 25,
+    marginRight: 25,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  deconnecterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "70%",
+    backgroundColor: "#198EA5",
+    padding: 10,
+    borderRadius: 5,
   },
   inputObjet: {
     height: 30,
@@ -565,5 +755,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
     paddingBottom: 25,
+  },
+  desabonnerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "70%",
+    backgroundColor: "#198EA5",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  infoObj: {
+
   },
 });

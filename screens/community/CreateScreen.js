@@ -7,8 +7,10 @@ import { BACKEND_URL } from '../../Constants';
 export default function CreateScreen({ navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
   const [communityName, setCommunityName] = useState('');
+  const [communityDescription, setCommunityDescription] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
-  const [isPublic, setIsPublic] = useState(false);
+  const [isPrivateOrPublicUndefined, setIsPrivateOrPublicUndefiened] = useState(null);
+  const [isPublic, setIsPublic] = useState(null);
 
   const [accessCode, setAccessCode] = useState("");
 
@@ -21,6 +23,7 @@ export default function CreateScreen({ navigation }) {
   const closeModal = () => {
     setModalVisible(false);
     resetCommunityName();
+    resetPrivatePublicButtons(); // Réinitialise les boutons Private et Public
   };
 
   const resetCommunityName = () => {
@@ -30,14 +33,24 @@ export default function CreateScreen({ navigation }) {
   const handlePrivateButtonPress = () => {
     setIsPrivate(true);
     setIsPublic(false);
+    setIsPrivateOrPublicUndefiened(false); // Reset error message when a selection is made
   };
 
   const handlePublicButtonPress = () => {
     setIsPrivate(false);
     setIsPublic(true);
+    setIsPrivateOrPublicUndefiened(false); // Reset error message when a selection is made
   };
 
+  const resetPrivatePublicButtons = () => {
+    setIsPrivate(false);
+    setIsPublic(false);
+  };
+
+  //const privateOrPublic = isPrivate || isPublic ;
+
   const createCommunity = async () => {
+    if (isPrivate || isPublic) {
     try {
       const response = await fetch(`${BACKEND_URL}/communities/create`, {
         method: 'POST',
@@ -45,9 +58,9 @@ export default function CreateScreen({ navigation }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: communityName,
+          name: communityName.trim(),
           localisation: 'Your community location',
-          description: 'Your community description',
+          description: communityDescription,
           photo: 'Your community photo URL',
           isPrivate: isPrivate, 
         }),
@@ -60,12 +73,17 @@ export default function CreateScreen({ navigation }) {
         console.log(data);
         openModal(communityName, data.accessCode);
       } else {
-        console.log('Error:', data.error);
+        console.log('Error1 :', data.error);
       }
     } catch (error) {
-      console.log('Error:', error.message);
+      console.log('Error 2:', error.message);
     }
-  };
+  } else {
+    setIsPrivateOrPublicUndefiened(true); // Show error message when no selection is made
+    setIsPublic(false);
+    setIsPrivate(false);
+  }
+}
 
   return (
     <SafeAreaView style={styles.container}>
@@ -84,11 +102,25 @@ export default function CreateScreen({ navigation }) {
               placeholder="Nom communauté"
               placeholderTextColor='#353639'
               value={communityName}
-              onChangeText={(text) => setCommunityName(text.trim())}
+              onChangeText={(text) => setCommunityName(text)}
             />
           </View>
           <View style={styles.nameCommuText}>
             <Text style={styles.commuText}>Nom de communauté libre</Text>
+          </View>
+        </View>
+        <View style={styles.inputContent}>
+          <View style={styles.inputCommuContent2}>
+            <FontAwesome style={styles.commuIcon} name='users' size={20} color='#353639' />
+            <TextInput
+              placeholder="Description"
+              placeholderTextColor='#353639'
+              value={communityDescription}
+              onChangeText={(text) => setCommunityDescription(text)}
+            />
+          </View>
+          <View style={styles.nameCommuText2}>
+            <Text style={styles.commuText}>Description de la communauté</Text>
           </View>
         </View>
         <View style={styles.btnConnect}>
@@ -108,6 +140,9 @@ export default function CreateScreen({ navigation }) {
             <FontAwesome5 style={styles.ppIcon} name='door-open' size={20} color={isPublic ? '#F8FCFB' : '#198EA5'} />
             <Text style={[styles.textBtnPublic, isPublic ? styles.textActive : null]}>Public</Text>
           </TouchableOpacity>
+        </View>
+        <View>
+        {isPrivateOrPublicUndefined && <Text style={styles.error}>Choisir "Public" ou "Privé"</Text>}
         </View>
         <View style={styles.btnCreateContent}>
           <TouchableOpacity style={styles.btnCreate} onPress={createCommunity}>
@@ -169,9 +204,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   upperText: {
-    height: '20%',
+    height: '15%',
     alignItems: 'center',
     justifyContent: 'center',
+    // backgroundColor: "green"
   },
   h5: {
     fontSize: 20,
@@ -180,10 +216,22 @@ const styles = StyleSheet.create({
   inputContent: {
     height: '20%',
     alignItems: 'center',
+    // backgroundColor: 'yellow'
+
   },
   inputCommuContent: {
     flexDirection: 'row',
     height: '45%',
+    width: '87%',
+    borderWidth: 2,
+    borderColor: '#198EA5',
+    borderRadius: 10,
+    paddingLeft: '5%',
+    alignItems: 'center',
+  },
+  inputCommuContent2: {
+    flexDirection: 'row',
+    height: '60%',
     width: '87%',
     borderWidth: 2,
     borderColor: '#198EA5',
@@ -196,13 +244,19 @@ const styles = StyleSheet.create({
   },
   nameCommuText:{
     marginTop: '2%',
-    marginRight: '43%'
+    marginRight: '43%',
+  },
+  nameCommuText2:{
+    marginTop: '2%',
+    marginRight: '37%',
   },
   btnConnect: {
     height: '15%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-evenly',
+    // backgroundColor: 'red'
+
   },
   btnPrive: {
     flexDirection: 'row',
@@ -258,7 +312,8 @@ const styles = StyleSheet.create({
   btnCreateContent: {
     height: '20%',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
+    marginTop: '5%',
   },
   btnCreate: {
     flexDirection: 'row',
@@ -333,5 +388,9 @@ const styles = StyleSheet.create({
   },
   textActive: {
     color: '#F8FCFB',
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center'
   },
 });
