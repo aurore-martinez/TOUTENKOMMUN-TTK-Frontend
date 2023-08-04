@@ -15,8 +15,7 @@ import {
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
-
-BACKEND_URL = "http://192.168.10.147:3000";
+import { BACKEND_URL } from "../../Constants";
 
 // Données de test pour la liste
 const mockData = [
@@ -45,7 +44,9 @@ export default function ListAndMapScreen({ route, navigation }) {
   const [mapObjects, setMapObjects] = useState([]);
   const [borrowText, setBorrowText] = useState(""); // State to manage the borrowed text
   const [isBorrowModalVisible, setIsBorrowModalVisible] = useState(false); // State to manage modal visibility
-  const [isDiscussionModalVisible, setIsDiscussionModalVisible] = useState(false); 
+  const [isDiscussionModalVisible, setIsDiscussionModalVisible] =
+    useState(false);
+  const token = useSelector
 
   // Effet pour demander et surveiller les autorisations de localisation
   useEffect(() => {
@@ -59,6 +60,8 @@ export default function ListAndMapScreen({ route, navigation }) {
         });
       }
     })();
+
+    fetchFeed();
   }, []);
 
   // Gère la sélection d'un élément de la liste
@@ -71,36 +74,49 @@ export default function ListAndMapScreen({ route, navigation }) {
     const mapResults = await fetchSearchResults(item);
     setMapObjects(mapResults);
   };
-
-  // Fonction pour effectuer la requête fetch
-  const fetchSearchResults = async (item) => {
+  const fetchFeed = async (token) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token: userToken,
-          name: item.title,
-          communitiesId: ["communityId1", "communityId2"],
-        }),
-      });
+      const response = await fetch(`${BACKEND_URL}/communities/feed/${token}`);
 
-      const data = await response.json();
-
-      if (data.result) {
-        console.log("Résultat de la recherche:", data.searchresult);
-        return data.searchresult; // Retourne les objets pour la carte
-      } else {
-        console.log("Erreur de recherche:", data.error);
-        return []; // Retourne un tableau vide en cas d'erreur
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
+      const data = await response.json();
+      // Ici, vous pouvez manipuler les données reçues du serveur
+      console.log(data);
     } catch (error) {
-      console.log("Erreur:", error.message);
-      return []; // Retourne un tableau vide en cas d'erreur
+      console.error("Une erreur s'est produite:", error);
     }
   };
+  // Fonction pour effectuer la requête fetch
+  //const fetchSearchResults = async (item) => {
+  //try {
+  // const response = await fetch(`${BACKEND_URL}/`, {
+  // method: "POST",
+  // headers: {
+  //   "Content-Type": "application/json",
+  // },
+  // body: JSON.stringify({
+  // token: userToken,
+  //name: item.title,
+  //communitiesId: ["communityId1", "communityId2"],
+  //r }),
+  //});
+
+  //const data = await response.json();
+
+  //if (data.result) {
+  //console.log("Résultat de la recherche:", data.searchresult);
+  // return data.searchresult; // Retourne les objets pour la carte
+  //} else {
+  //console.log("Erreur de recherche:", data.error);
+  //return []; // Retourne un tableau vide en cas d'erreur
+  // }
+  //} catch (error) {
+  //console.log("Erreur:", error.message);
+  //return []; // Retourne un tableau vide en cas d'erreur
+  //}
+  //};
   const handleBorrowButtonPress = () => {
     setIsBorrowModalVisible(true);
   };
@@ -309,67 +325,72 @@ export default function ListAndMapScreen({ route, navigation }) {
             )}
             {/* Borrow Modal */}
             <Modal
-  animationType="slide"
-  transparent={true}
-  visible={isBorrowModalVisible}
-  onRequestClose={() => {
-    setIsBorrowModalVisible(false);
-  }}
->
-  <View style={styles.modalContainer}>
-    <View style={styles.modalContent}>
-      <Text style={styles.modalTitle}>Veux tu emprunter ? </Text>
-      <View style={styles.iconContainer}>
-     
-        <FontAwesome  style={styles.iconX} name="camera" size={50} color="#198EA5" />
-      </View>
-      <View style={styles.modalButtonContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            setIsBorrowModalVisible(false);
-            setIsDiscussionModalVisible(true)
-          }}
-          style={[styles.modalButton, styles.cancelButton]}
-        >
-          <Text style={styles.modalButtonText}>Annuler</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-
-            console.log("Borrow text:", borrowText);
-            setIsBorrowModalVisible(false);
-          }}
-          style={[styles.modalButton, styles.confirmButton]}
-        >
-          <Text style={styles.modalButtonText}>Oui</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </View>
-</Modal>
-<Modal
-  animationType="slide"
-  transparent={true}
-  visible={isDiscussionModalVisible}
-  onRequestClose={() => {
-    setIsDiscussionModalVisible(false);
-  }}
->
-  <View style={[styles.modalContainer, styles.modalDiscussionContainer]}>
-    <View style={styles.modalContent}>
-      <Text style={styles.modalTitle}>Discussion</Text>
-      <Text>Contenu de la discussion...</Text>
-      <TouchableOpacity
-        onPress={() => {
-          setIsDiscussionModalVisible(false);
-        }}
-        style={styles.modalCloseButton}
-      >
-        <Text style={styles.modalCloseButtonText}>Fermer</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
+              animationType="slide"
+              transparent={true}
+              visible={isBorrowModalVisible}
+              onRequestClose={() => {
+                setIsBorrowModalVisible(false);
+              }}
+            >
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>Veux tu emprunter ? </Text>
+                  <View style={styles.iconContainer}>
+                    <FontAwesome
+                      style={styles.iconX}
+                      name="camera"
+                      size={50}
+                      color="#198EA5"
+                    />
+                  </View>
+                  <View style={styles.modalButtonContainer}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setIsBorrowModalVisible(false);
+                        setIsDiscussionModalVisible(true);
+                      }}
+                      style={[styles.modalButton, styles.cancelButton]}
+                    >
+                      <Text style={styles.modalButtonText}>Annuler</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        console.log("Borrow text:", borrowText);
+                        setIsBorrowModalVisible(false);
+                      }}
+                      style={[styles.modalButton, styles.confirmButton]}
+                    >
+                      <Text style={styles.modalButtonText}>Oui</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={isDiscussionModalVisible}
+              onRequestClose={() => {
+                setIsDiscussionModalVisible(false);
+              }}
+            >
+              <View
+                style={[styles.modalContainer, styles.modalDiscussionContainer]}
+              >
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>Discussion</Text>
+                  <Text>Contenu de la discussion...</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setIsDiscussionModalVisible(false);
+                    }}
+                    style={styles.modalCloseButton}
+                  >
+                    <Text style={styles.modalCloseButtonText}>Fermer</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
           </View>
         </Modal>
       </KeyboardAvoidingView>
@@ -511,10 +532,10 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#F8FCFB",
-    padding: 70, 
+    padding: 70,
     borderRadius: 10,
-    marginLeft: 50, 
-    marginRight: 50, 
+    marginLeft: 50,
+    marginRight: 50,
     marginTop: 50,
   },
   modalTitle: {
@@ -551,8 +572,9 @@ const styles = StyleSheet.create({
     marginLeft: 0,
   },
   mapContainer: {
-    flex: 1
-  },borrowTextInput: {
+    flex: 1,
+  },
+  borrowTextInput: {
     borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 5,
@@ -580,14 +602,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
   },
-  iconX:{
+  iconX: {
     textAlign: "center",
-
   },
   modalDiscussionContainer: {
     justifyContent: "flex-start",
-    marginTop: 10, 
+    marginTop: 10,
   },
-
-
 });
