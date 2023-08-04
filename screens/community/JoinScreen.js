@@ -1,12 +1,48 @@
 import { Platform, SafeAreaView, StatusBar, TouchableOpacity, Modal } from 'react-native';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, Text, View, TextInput } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-
+import { BACKEND_URL } from '../../Constants';
+import { useSelector } from 'react-redux';
 
 export default function JoinScreen({ navigation }) {
 
   const [isModalVisible, setModalVisible] = useState(false);
+  const [name, setName] = useState("");
+  const [accessCode, setAcessCode] = useState("");
+  const [localisation, setLocalisation] = useState("");
+  const [description, setDescription] = useState("");
+
+  // utiliser un useRef pour vider les champs car on devait les réutiliser sur la modal
+  const nameRef = useRef(null);
+  const codeRef = useRef(null);
+
+  const token = useSelector((state) => state.users.token);
+
+  	/**
+	 * Fonction envoyant le nom et le accessCode au backend
+	 */
+  const handleJoin = async () => {
+		if (name !== "" && accessCode !== "") {
+			const response = await fetch(`${BACKEND_URL}/communities/join`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name, accessCode, token })
+			});
+
+			const existingCommunity = await response.json();
+			if (existingCommunity.result) {
+        nameRef.current.clear();
+        codeRef.current.clear();
+        setLocalisation(existingCommunity.localisation);
+        setDescription(existingCommunity.description);
+        openModal();
+			} else {
+				console.log('Error', existingCommunity.error);
+			}
+		}
+	};    
+
 
   const openModal = () => {
     setModalVisible(true);
@@ -34,10 +70,12 @@ export default function JoinScreen({ navigation }) {
           activeOpacity={0.8}
         >
           <View style={styles.input}>
-            <FontAwesome style={styles.icon} name="users" size='20' color='black' />
+            <FontAwesome style={styles.icon} name="users" size={20} color='black' />
             <TextInput
               placeholder="Nom de la communauté"
               autoCapitalize="none"
+              ref={nameRef}
+              onChangeText={(e) => setName(e.trim())}
             />
           </View>
         </TouchableOpacity> 
@@ -45,17 +83,19 @@ export default function JoinScreen({ navigation }) {
           activeOpacity={0.8}
         >
           <View style={styles.input}>
-            <FontAwesome style={styles.icon} name="lock" size='20' color='black' />
+            <FontAwesome style={styles.icon} name="lock" size={20} color='black' />
             <TextInput
               placeholder="Code d'accès"
               autoCapitalize="none"
+              ref={codeRef}
+              onChangeText={(e) => setAcessCode(e.trim())}
             />
           </View>
         </TouchableOpacity> 
         </View>
 
         <View style={styles.btnValidateContent}>
-          <TouchableOpacity style={styles.btnValidate}  onPress={openModal}>
+          <TouchableOpacity style={styles.btnValidate} onPress={() => handleJoin()}>
           {/* onPress={() => navigation.navigate("Prêt") */}
             <FontAwesome style={styles.handIcon} name='hand-o-right' size={20} color='#353639'/>
             <Text style={styles.btnTextValidate}>Valider</Text>
@@ -106,14 +146,14 @@ export default function JoinScreen({ navigation }) {
   <Modal visible={isModalVisible} animationType="slide" transparent={true}>
     <View style={styles.modalContainer}>
       <View style={styles.modalContent}>
-        <Text style={styles.titleh3}>Communauté : XXX</Text>
-        <Text style={styles.titleh3}>Localisation : XXX</Text>
-        <Text style={styles.titleh3}>Description : </Text><Text style={styles.titleh4}>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."" </Text>
+        <Text style={styles.titleh3}>Communauté : {name}</Text>
+        <Text style={styles.titleh3}>Localisation : {localisation}</Text>
+        <Text style={styles.titleh3}>Description : </Text><Text style={styles.titleh4}>{description}</Text>
         <View style={styles.modalBtnContent}>
         {/* Bouton pour rejoindre */}
         <TouchableOpacity style={styles.joinButton} onPress={() => {
-          // Ajoutez ici le code pour gérer l'ouverture de l'application d'e-mail avec les détails de votre communauté
-          closeModal(); // Fermez la modal après avoir choisi l'option e-mail
+          navigation.navigate('TabNavigator', { screen: 'Prêt' });
+          closeModal();
         }}>
           <FontAwesome style={styles.ppIcon} name='arrow-circle-right' size={20} color='#F8FCFB'/>
           <Text style={styles.joinButtonText}>Rejoindre</Text>
@@ -327,7 +367,7 @@ const styles = StyleSheet.create({
     textAlign: 'justify'
   },
   ppIcon: {
-    fontSize: '20',
+    fontSize: 20,
     fontWeight: 'bold',
     marginRight: 10
   },
