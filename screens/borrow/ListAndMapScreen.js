@@ -158,7 +158,8 @@ export default function ListAndMapScreen({ route, navigation }) {
     setIsBorrowModalVisible(true);
   };
   const handleDiscussionModalVisible = () => {
-    setisDiscussionModalVisible(true);
+    console.log("Borrow button pressed");
+    setIsDiscussionModalVisible(true);
   };
 
   // SearchRes sera défini qu'e lorsqu'après l'initialisation du composant
@@ -222,6 +223,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 
   // Rendu du composant
   return (
+    
     <SafeAreaView>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -247,13 +249,14 @@ export default function ListAndMapScreen({ route, navigation }) {
           <View style={styles.rowSearch}>
             <View style={styles.row}>
               <FontAwesome
-                name="search"
+                name=""
                 size={20}
                 color="#198EA5"
                 style={styles.iconSearch}
               />
               <TextInput
-                placeholder="Je recherche..."
+              
+                placeholder="Mes objets ..."
                 autoCapitalize="none"
                 value={searchTerm}
                 onChangeText={setSearchTerm}
@@ -268,21 +271,20 @@ export default function ListAndMapScreen({ route, navigation }) {
               }}
             >
               <View style={styles.searchButton}>
-                <Text style={styles.searchButtonText}>Rechercher</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.8}>
-              <View style={styles.filter}>
-                <FontAwesome
+                <Text style={styles.searchButtonText}>Rechercher <FontAwesome
                   name="sliders"
                   size={20}
                   color="#EEFCFF"
                   style={styles.iconFilter}
-                />
+                /></Text>
               </View>
+            </TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.8}>
+              
             </TouchableOpacity>
           </View>
         </View>
+
 
         {/* Barre de navigation entre Liste et Carte */}
         <View style={styles.rowMenu}>
@@ -440,7 +442,7 @@ export default function ListAndMapScreen({ route, navigation }) {
                       }}
                       style={[styles.modalButton, styles.cancelButton]}
                     >
-                      <Text style={styles.modalButtonText}>Annuler</Text>
+                      <Text style={styles.modalButtonText}>Oui</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
@@ -449,7 +451,7 @@ export default function ListAndMapScreen({ route, navigation }) {
                       }}
                       style={[styles.modalButton, styles.confirmButton]}
                     >
-                      <Text style={styles.modalButtonText}>Oui</Text>
+                      <Text style={styles.modalButtonText}>Annuler</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -467,16 +469,20 @@ export default function ListAndMapScreen({ route, navigation }) {
                 style={[styles.modalContainer, styles.modalDiscussionContainer]}
               >
                 <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>Discussion</Text>
-                  <Text>Contenu de la discussion...</Text>
+                  <Text style={styles.modalTitle}>Récapitulatif</Text>
+                  <Text>Je suis : [username] </Text>
                   <TouchableOpacity
-                    onPress={() => {
-                      setIsDiscussionModalVisible(false);
-                    }}
-                    style={styles.modalCloseButton}
-                  >
-                    <Text style={styles.modalCloseButtonText}>Fermer</Text>
-                  </TouchableOpacity>
+                  onPress={handleBorrowButtonPress}
+                  style={styles.seethechatButton}
+                >
+                  <FontAwesome
+                    name="check"
+                    size={20}
+                    color="white"
+                    style={styles.iconEmprunter}
+                  />
+                  <Text style={styles.emprunterButtonText}>Voir la discussion</Text>
+                </TouchableOpacity>
                 </View>
               </View>
             </Modal>
@@ -711,4 +717,17 @@ const styles = StyleSheet.create({
     color: "green",
     fontWeight: "bold",
   },
+  seethechatButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  emprunterButtonText:{
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginLeft: 10,
+
+  }
 });
