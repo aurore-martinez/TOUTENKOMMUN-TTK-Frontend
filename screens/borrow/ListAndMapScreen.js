@@ -18,21 +18,7 @@ import * as Location from "expo-location";
 import { BACKEND_URL } from "../../Constants";
 import { useSelector } from "react-redux";
 
-// Données de test pour la liste
-const mockData = [
-  {
-    id: "1",
-    title: "Martin",
-    icon: "key",
-    description: "Je prête ma scie les amis!",
-  },
-  {
-    id: "2",
-    title: "Kapi",
-    icon: "key",
-    description: "Je prête mon marteau les amis!",
-  },
-];
+
 
 // Composant principal
 export default function ListAndMapScreen({ route, navigation }) {
@@ -48,11 +34,14 @@ export default function ListAndMapScreen({ route, navigation }) {
   const [isDiscussionModalVisible, setIsDiscussionModalVisible] =
     useState(false);
   const [data, setData] = useState([]);
-  const token = useSelector((state) => state.users.token);
+
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [searchError, setSearchError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+
+  const token = useSelector((state) => state.users.token);
 
   // Effet pour demander et surveiller les autorisations de localisation
   useEffect(() => {
@@ -75,15 +64,19 @@ export default function ListAndMapScreen({ route, navigation }) {
     }
   }, [searchTerm]);
 
+
   // Gère la sélection d'un élément de la liste
   const handleItemPress = async (item) => {
     setSelectedItem(item === selectedItem ? null : item);
     setSelectedItemInfo(item === selectedItemInfo ? null : item);
+    console.log("selectedItemInfo 1",selectedItemInfo)
     setIsModalVisible(true);
+  
 
     // Récupère les objets pour la carte
     const mapResults = await fetchFeed(item);
     setMapObjects(mapResults);
+
   };
   const fetchFeed = async () => {
     try {
@@ -94,25 +87,30 @@ export default function ListAndMapScreen({ route, navigation }) {
       }
       const data = await response.json();
       const mapMarkersData = data.items.map((item) => ({
-        title: item.name,
-        latitude: item.owner.address.latitude, // You need to adjust these property names based on your data structure
+        name: item.name,
+        latitude: item.owner.address.latitude,
         longitude: item.owner.address.longitude,
         distance: item.distance,
       }));
       setMapObjects(mapMarkersData);
       setData(data.items);
       // Ici, vous pouvez manipuler les données reçues du serveur
+      console.log("data.items", data.items)
       console.log("feed", data);
     } catch (error) {
       console.error("Une erreur s'est produite:", error);
     }
   };
 
-  const fetchSearchResults = async (item) => {
+  const fetchSearchResults = async () => {
     try {
       setSearchLoading(true);
       setSearchError(null);
-      console.log("Recherche en cours avec le terme :", item);
+      console.log("Recherche en cours avec le terme :", searchTerm);
+  
+      // Extract communitiesId from selectedItemInfo
+      const communitiesId = selectedItemInfo?.availableIn?.map((community) => community._id) || [];
+  
       const response = await fetch(`${BACKEND_URL}/search`, {
         method: "POST",
         headers: {
@@ -121,32 +119,32 @@ export default function ListAndMapScreen({ route, navigation }) {
         body: JSON.stringify({
           token: token,
           name: searchTerm,
+          communitiesId: communitiesId,
         }),
       });
-
+  
       const data = await response.json();
-
+  
       if (data.result) {
-        console.log("Résultats de la recherche :", data.searchresult); // Ajouter cette ligne
-
-        
+        console.log("Résultats de la recherche :", data.searchresult);
+  
         const mapMarkersData = data.searchresult.map((item) => ({
           title: item.name,
-          latitude: item.owner.address.latitude, // You need to adjust these property names based on your data structure
+          latitude: item.owner.address.latitude,
           longitude: item.owner.address.longitude,
           distance: item.distance,
-        }));  
+        }));
         setMapObjects(mapMarkersData);
         setSearchResults(data.searchresult);
       } else {
-        console.log("Erreur de recherche :", data.error); // Ajouter cette ligne
-
+        console.log("Erreur de recherche :", data.error);
+  
         setSearchResults([]);
         setSearchError(data.error);
       }
     } catch (error) {
-      console.log("Erreur :", error.message); // Ajouter cette ligne
-
+      console.log("Erreur :", error.message);
+  
       setSearchResults([]);
       setSearchError(error.message);
     } finally {
@@ -154,12 +152,35 @@ export default function ListAndMapScreen({ route, navigation }) {
     }
   };
 
+  	/**
+	 * Fonction pour emprunter un objet
+	 */  
+    const handleBorrow = async () => {
+        const response = await fetch(`${BACKEND_URL}/transactions/borrow/${token}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({_id: selectedItemInfo._id })
+        });
+    
+        const data = await response.json();
+
+        console.log("response", response)
+    
+        if (response.ok) {
+          fetchFeed();
+          console.log(data.message); // Affiche "Objet emprunté avec succès !! :D"
+        } else {
+          console.log(data.error); // Affiche l'erreur s'il y en a une
+        }
+    };
+
   const handleBorrowButtonPress = () => {
     setIsBorrowModalVisible(true);
   };
   const handleDiscussionModalVisible = () => {
-    console.log("Borrow button pressed");
-    setIsDiscussionModalVisible(true);
+    setisDiscussionModalVisible(true);
   };
 
   // SearchRes sera défini qu'e lorsqu'après l'initialisation du composant
@@ -223,7 +244,6 @@ export default function ListAndMapScreen({ route, navigation }) {
 
   // Rendu du composant
   return (
-    
     <SafeAreaView>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -249,14 +269,13 @@ export default function ListAndMapScreen({ route, navigation }) {
           <View style={styles.rowSearch}>
             <View style={styles.row}>
               <FontAwesome
-                name=""
+                name="search"
                 size={20}
                 color="#198EA5"
                 style={styles.iconSearch}
               />
               <TextInput
-              
-                placeholder="Mes objets ..."
+                placeholder="Je recherche..."
                 autoCapitalize="none"
                 value={searchTerm}
                 onChangeText={setSearchTerm}
@@ -266,25 +285,27 @@ export default function ListAndMapScreen({ route, navigation }) {
               activeOpacity={0.8}
               onPress={() => {
                 if (searchTerm) {
+                  console.log("searchTerm:", searchTerm)
                   fetchSearchResults(searchTerm);
                 }
               }}
             >
               <View style={styles.searchButton}>
-                <Text style={styles.searchButtonText}>Rechercher <FontAwesome
+                <Text style={styles.searchButtonText}>Rechercher</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.8}>
+              <View style={styles.filter}>
+                <FontAwesome
                   name="sliders"
                   size={20}
                   color="#EEFCFF"
                   style={styles.iconFilter}
-                /></Text>
+                />
               </View>
-            </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.8}>
-              
             </TouchableOpacity>
           </View>
         </View>
-
 
         {/* Barre de navigation entre Liste et Carte */}
         <View style={styles.rowMenu}>
@@ -390,8 +411,10 @@ export default function ListAndMapScreen({ route, navigation }) {
           <View style={styles.modalContainer}>
             {selectedItemInfo && (
               <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>{selectedItemInfo.title}</Text>
-                <Text>{selectedItemInfo.description}</Text>
+                <Text style={styles.modalTitle}>{selectedItemInfo.name}</Text>
+                
+                <Text>de : {selectedItemInfo.owner.username}</Text>
+                <Text>au : {selectedItemInfo.owner.address.street}, {selectedItemInfo.owner.address.zipCode}, {selectedItemInfo.owner.address.city}</Text>               
                 <TouchableOpacity
                   onPress={handleBorrowButtonPress}
                   style={styles.emprunterButton}
@@ -442,16 +465,16 @@ export default function ListAndMapScreen({ route, navigation }) {
                       }}
                       style={[styles.modalButton, styles.cancelButton]}
                     >
-                      <Text style={styles.modalButtonText}>Oui</Text>
+                      <Text style={styles.modalButtonText}>Annuler</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
-                        console.log("Borrow text:", borrowText);
+                        handleBorrow(selectedItemInfo)
                         setIsBorrowModalVisible(false);
                       }}
                       style={[styles.modalButton, styles.confirmButton]}
                     >
-                      <Text style={styles.modalButtonText}>Annuler</Text>
+                      <Text style={styles.modalButtonText}>Oui</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -469,20 +492,16 @@ export default function ListAndMapScreen({ route, navigation }) {
                 style={[styles.modalContainer, styles.modalDiscussionContainer]}
               >
                 <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>Récapitulatif</Text>
-                  <Text>Je suis : [username] </Text>
+                  <Text style={styles.modalTitle}>Discussion</Text>
+                  <Text>Contenu de la discussion...</Text>
                   <TouchableOpacity
-                  onPress={handleBorrowButtonPress}
-                  style={styles.seethechatButton}
-                >
-                  <FontAwesome
-                    name="check"
-                    size={20}
-                    color="white"
-                    style={styles.iconEmprunter}
-                  />
-                  <Text style={styles.emprunterButtonText}>Voir la discussion</Text>
-                </TouchableOpacity>
+                    onPress={() => {
+                      setIsDiscussionModalVisible(false);
+                    }}
+                    style={styles.modalCloseButton}
+                  >
+                    <Text style={styles.modalCloseButtonText}>Fermer</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </Modal>
@@ -717,17 +736,4 @@ const styles = StyleSheet.create({
     color: "green",
     fontWeight: "bold",
   },
-  seethechatButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginLeft: 10,
-  },
-  emprunterButtonText:{
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginLeft: 10,
-
-  }
 });
