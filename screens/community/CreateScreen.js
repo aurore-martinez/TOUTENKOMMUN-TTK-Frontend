@@ -7,6 +7,7 @@ import { BACKEND_URL } from '../../Constants';
 
 export default function CreateScreen({ navigation }) {
 
+  //mémo : récupérer/traduire la localisation de l'input "Localisation"
     // On recupère le token
     const token = useSelector((state) => state.users.token);
 
@@ -14,6 +15,7 @@ export default function CreateScreen({ navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
   const [communityName, setCommunityName] = useState('');
   const [communityDescription, setCommunityDescription] = useState('');
+  const [communityLocalisation, setCommunityLocalisation] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [isPrivateOrPublicUndefined, setIsPrivateOrPublicUndefiened] = useState(null);
   const [isPublic, setIsPublic] = useState(null);
@@ -66,7 +68,7 @@ export default function CreateScreen({ navigation }) {
         },
         body: JSON.stringify({
           name: communityName.trim(),
-          localisation: 'Your community location',
+          localisation: communityLocalisation,
           description: communityDescription,
           photo: 'Your community photo URL',
           isPrivate: isPrivate, 
@@ -118,7 +120,7 @@ export default function CreateScreen({ navigation }) {
         </View>
         <View style={styles.inputContent}>
           <View style={styles.inputCommuContent2}>
-            <FontAwesome style={styles.commuIcon} name='users' size={20} color='#353639' />
+            <FontAwesome style={styles.commuIcon} name='quote-left' size={20} color='#353639' />
             <TextInput
               placeholder="Description"
               placeholderTextColor='#353639'
@@ -128,6 +130,20 @@ export default function CreateScreen({ navigation }) {
           </View>
           <View style={styles.nameCommuText2}>
             <Text style={styles.commuText}>Description de la communauté</Text>
+          </View>
+        </View>
+        <View style={styles.inputContent}>
+          <View style={styles.inputCommuContent}>
+            <FontAwesome style={styles.commuIcon} name='map-pin' size={20} color='#353639' />
+            <TextInput
+              placeholder="Localisation"
+              placeholderTextColor='#353639'
+              value={communityLocalisation}
+              onChangeText={(text) => setCommunityLocalisation(text)}
+            />
+          </View>
+          <View style={styles.nameCommuText3}>
+            <Text style={styles.commuText}>Localisation</Text>
           </View>
         </View>
         <View style={styles.btnConnect}>
@@ -211,7 +227,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   upperText: {
-    height: '15%',
+    height: '14%',
     alignItems: 'center',
     justifyContent: 'center',
     // backgroundColor: "green"
@@ -221,10 +237,10 @@ const styles = StyleSheet.create({
     color: '#353639',
   },
   inputContent: {
-    height: '20%',
+    height: '16%',
     alignItems: 'center',
+    justifyContent: 'center',
     // backgroundColor: 'yellow'
-
   },
   inputCommuContent: {
     flexDirection: 'row',
@@ -257,8 +273,12 @@ const styles = StyleSheet.create({
     marginTop: '2%',
     marginRight: '37%',
   },
+  nameCommuText3:{
+    marginTop: '2%',
+    marginRight: '67%',
+  },
   btnConnect: {
-    height: '15%',
+    height: '12%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-evenly',
