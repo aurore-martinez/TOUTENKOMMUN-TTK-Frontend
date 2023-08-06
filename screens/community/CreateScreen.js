@@ -55,6 +55,7 @@ export default function CreateScreen({ navigation }) {
 
   //const privateOrPublic = isPrivate || isPublic ;
 
+  // fetch route create
   const createCommunity = async () => {
     if (isPrivate || isPublic) {
     try {
