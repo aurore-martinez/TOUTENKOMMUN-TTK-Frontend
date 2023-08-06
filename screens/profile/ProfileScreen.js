@@ -10,6 +10,8 @@ import {
   TextInput,
   Modal,
   Image,
+  FlatList,
+  ScrollView
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
@@ -37,6 +39,7 @@ const dispatch = useDispatch();
   const [userObjects, setUserObjects] = useState([]);
   const [name, setName] = useState("");
   const [communities, setCommunities] = useState(null);
+  const [description, setDescription] = useState("");
 
   const [isModalPlusVisible, setModalPlusVisible] = useState(false);
   const [isCameraActive, setCameraActive] = useState(false);
@@ -91,18 +94,55 @@ const dispatch = useDispatch();
 
      const handleAddObject = async () => {
        if (name !== "") {
-        const response = await fetch(`${BACKEND_URL}/users/profil/${token}/object`, {
+        const response = await fetch(`${BACKEND_URL}/users/profil/object/${token}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name })
+          body: JSON.stringify({ name, description })
         });
   
         const dataObject = await response.json();
         if (dataObject.result) {
           console.log('Objet ajouté', dataObject.result);
+          getUserObjects();
         } else {
           console.log('Erreur objet non ajouté', dataObject.error);
         }
+      }
+    };
+
+    const handleDeleteObject = async (objectId) => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/users/objects/${token}/${objectId}`, {
+          method: 'DELETE',
+        });
+    
+        const data = await response.json();
+        if (response.ok) {
+          console.log("L'objet a été supprimé avec succès.");
+          getUserObjects();
+        } else {
+          console.log("Erreur lors de la suppression de l'objet :", data.message);
+        }
+      } catch (error) {
+        console.error("Une erreur est survenue lors de la suppression de l'objet :", error.message);
+      }
+    };
+
+    const handleDeleteCommunity = async (communityId) => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/users/profil/${token}/${communityId}`, {
+          method: 'DELETE',
+        });
+    
+        const data = await response.json();
+        if (response.ok) {
+          console.log("La communauté a été supprimée avec succès.");
+          getUserCommu();
+        } else {
+          console.log("Erreur lors de la suppression de la communauté :", data.message);
+        }
+      } catch (error) {
+        console.error("Une erreur est survenue lors de la suppression de la communauté :", error.message);
       }
     };
 
@@ -206,6 +246,7 @@ const dispatch = useDispatch();
     setUserObjects([]);
     setName("");
     setCommunities(null);
+    setDescription("");
     dispatch(logout());
   
     navigation.navigate('SignIn');
@@ -236,7 +277,7 @@ const dispatch = useDispatch();
             <Text style={styles.infoUser}>{username}</Text>
             <Text style={styles.infoUser}>{email}</Text>
           </View>
-
+        <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.menuContent}>
             <TouchableOpacity
               onPress={toggleCommunities}
@@ -250,11 +291,18 @@ const dispatch = useDispatch();
             </TouchableOpacity>
             {showCommunities && (
               <View style={styles.subMenuContent}>
-                {communities.map((community, i) => (
-                  <View key={i}>
-                    <Text onPress={() => openModalCommunity(community)}>{community.name}</Text>
-                  </View>
-                ))}
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={communities}
+                  keyExtractor={(item) => item._id.toString()}
+                  renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => openModalCommunity(item)} style={styles.objectItem}>
+                  <FontAwesome name='image' size={100} />
+                  <Text>{item.name}</Text>
+                </TouchableOpacity>
+                  )}
+                />
               </View>
             )}
 
@@ -293,14 +341,22 @@ const dispatch = useDispatch();
             </TouchableOpacity>
             {showObjets && (
               <View style={styles.subMenuContent}>
-                {userObjects.map((obj, i) => (
-                  <View key={i} style={styles.objectItem}>
-                    <Text onPress={() => openModalObject(obj)}>{obj}</Text>
-                  </View>
-                ))}
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={userObjects}
+                  keyExtractor={(item) => item._id.toString()}
+                  renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => openModalObject(item)} style={styles.objectItem}>
+                  <FontAwesome name='image' size={100} />
+                  <Text>{item.name}</Text>
+                </TouchableOpacity>
+                  )}
+                />
               </View>
-            )}
+              )}
           </View>
+          </ScrollView>
         </View>
 
         {/*MODAL LOGOUT*/}
@@ -362,6 +418,16 @@ const dispatch = useDispatch();
                 />
               </View>
               <View style={styles.modalInput}>
+                <Text>Description : </Text>
+                <TextInput
+                  style={styles.inputObjet}
+                  placeholder="Description"
+                  placeholderTextColor='#353639'
+                  value={description}
+                  onChangeText={setDescription}
+                />
+              </View>
+              <View style={styles.modalInput}>
                 <Text>Photo : </Text>
                 <TouchableOpacity onPress={camera} style={styles.cameraButton}>
                   <FontAwesome name="camera" size={24} color="black" />
@@ -410,16 +476,8 @@ const dispatch = useDispatch();
           >
             <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
               {/* Contenu de la modal */}
-              <View style={styles.modalInput}>
-                <Text>Communauté : {selectedCommunity && selectedCommunity.name}</Text>
-              </View>
-              <View style={styles.modalInput}>
-                <Text>Photo : </Text>
-                <TouchableOpacity onPress={camera} style={styles.cameraButton}>
-                  <FontAwesome name="camera" size={24} color="black" />
-                </TouchableOpacity>
-              </View>
               <View style={styles.choixCommu}>
+                <Text>Communauté : {selectedCommunity && selectedCommunity.name}</Text>
                 <Text>Code d'accès : {selectedCommunity && selectedCommunity.accessCode}</Text>
                 <Text>Description : {selectedCommunity && selectedCommunity.description}</Text>
               </View>
@@ -428,6 +486,7 @@ const dispatch = useDispatch();
                 <TouchableOpacity
                   style={styles.desabonnerButton}
                   onPress={() => {
+                    handleDeleteCommunity(selectedCommunity._id);
                     closeModal(); // Fermez la modal après avoir ajouté l'objet
                   }}
                 >                 
@@ -458,13 +517,15 @@ const dispatch = useDispatch();
             <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
               {/* Contenu de la modal */}
               <View style={styles.infoObj}>
-                <Text>Nom de l'objet : {selectedObject && selectedObject}</Text>
+                <Text>Nom de l'objet : {selectedObject && selectedObject.name}</Text>
+                <Text>Description : {selectedObject && selectedObject.description}</Text>
               </View>
               <View style={styles.modalBtnContent}>
                 {/* Bouton pour supprimer l'objet */}
                 <TouchableOpacity
                   style={styles.desabonnerButton}
                   onPress={() => {
+                    handleDeleteObject(selectedObject._id);
                     closeModal(); // Fermez la modal après avoir supprimé l'objet
                   }}
                 >                 
@@ -568,7 +629,7 @@ const styles = StyleSheet.create({
     height: "90%",
   },
   avatarContent: {
-    height: "50%",
+    height: "38%",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -612,7 +673,6 @@ const styles = StyleSheet.create({
   },
   subMenuContent: {
     paddingVertical: 10,
-    paddingLeft: 30,
     borderBottomWidth: 1,
     borderBottomColor: "#198EA5",
   },
@@ -766,7 +826,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 10,
   },
-  infoObj: {
-
+  objectItem:{
+    alignItems: 'center',
+    marginRight: 14
   },
 });
