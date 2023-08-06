@@ -27,7 +27,7 @@ export default function JoinScreen({ navigation }) {
 			const response = await fetch(`${BACKEND_URL}/communities/join`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name, accessCode, token })
+				body: JSON.stringify({ name, accessCode, description, token })
 			});
 
 			const existingCommunity = await response.json();
@@ -36,7 +36,7 @@ export default function JoinScreen({ navigation }) {
         codeRef.current.clear();
         setLocalisation(existingCommunity.localisation);
         setDescription(existingCommunity.description);
-        openModal();
+        // openModal();
 			} else {
 				console.log('Error', existingCommunity.error);
 			}
@@ -95,7 +95,7 @@ export default function JoinScreen({ navigation }) {
         </View>
 
         <View style={styles.btnValidateContent}>
-          <TouchableOpacity style={styles.btnValidate} onPress={() => handleJoin()}>
+          <TouchableOpacity style={styles.btnValidate} onPress={openModal}>
           {/* onPress={() => navigation.navigate("Prêt") */}
             <FontAwesome style={styles.handIcon} name='hand-o-right' size={20} color='#353639'/>
             <Text style={styles.btnTextValidate}>Valider</Text>
@@ -146,17 +146,18 @@ export default function JoinScreen({ navigation }) {
   <Modal visible={isModalVisible} animationType="slide" transparent={true}>
     <View style={styles.modalContainer}>
       <View style={styles.modalContent}>
-        <Text style={styles.titleh3}>Communauté : {name}</Text>
-        <Text style={styles.titleh3}>Localisation : {localisation}</Text>
-        <Text style={styles.titleh3}>Description : </Text><Text style={styles.titleh4}>{description}</Text>
+        <Text style={styles.titleh3}>Êtes-vous sûr(e) de vouloir rejoindre la communauté : "{name}"</Text>
+        {/* <Text style={styles.titleh3}>Localisation : {localisation}</Text> */}
+        {/* <Text style={styles.titleh3}>Description : </Text><Text style={styles.titleh4}>{description}</Text> */}
         <View style={styles.modalBtnContent}>
         {/* Bouton pour rejoindre */}
         <TouchableOpacity style={styles.joinButton} onPress={() => {
+          handleJoin();
           navigation.navigate('TabNavigator', { screen: 'Prêt' });
           closeModal();
         }}>
           <FontAwesome style={styles.ppIcon} name='arrow-circle-right' size={20} color='#F8FCFB'/>
-          <Text style={styles.joinButtonText}>Rejoindre</Text>
+          <Text style={styles.joinButtonText}>Oui, rejoindre</Text>
         </TouchableOpacity>
     </View>
     {/* Bouton pour fermer la modal */}
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '40%',
+    width: '60%',
     backgroundColor: '#198EA5',
     padding: 10,
     borderRadius: 5,

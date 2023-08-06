@@ -61,11 +61,12 @@ export default function SignInScreen({ navigation }) {
 						<FontAwesome style={styles.userIcon} name='user' size={20} color='#353639' />
 						<TextInput style={{ width: 225 }} placeholder="Email" placeholderTextColor='#353639' autoCapitalize='none' inputMode='email' value={email} onChangeText={(e) => setEmail(e.trim())} />
 					</View>
-					{emailError && <Text style={styles.error}>Adresse email invalide</Text>}
+					
 					<View style={styles.mdpContent}>
 						<FontAwesome style={styles.mdpIcon} name='lock' size={20} color='#353639' />
 						<TextInput style={{ width: 225 }} placeholder="Mot de passe" placeholderTextColor='#353639' value={password} secureTextEntry={true} onChangeText={(e) => setPassword(e.trim())} />
 					</View>
+					{emailError && <Text style={styles.error}>Adresse email ou mot de passe invalide</Text>}
 				</View>
 
 				<View style={styles.btnValidateContent}>
