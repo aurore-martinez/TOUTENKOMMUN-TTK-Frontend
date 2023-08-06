@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
+import { useSelector } from "react-redux";
 import { StyleSheet, Text, View, TouchableOpacity, Platform, SafeAreaView, StatusBar, KeyboardAvoidingView, TextInput, Modal } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { BACKEND_URL } from '../../Constants';
 
 export default function CreateScreen({ navigation }) {
+
+    // On recupère le token
+    const token = useSelector((state) => state.users.token);
+
+
   const [isModalVisible, setModalVisible] = useState(false);
   const [communityName, setCommunityName] = useState('');
   const [communityDescription, setCommunityDescription] = useState('');
@@ -52,7 +58,7 @@ export default function CreateScreen({ navigation }) {
   const createCommunity = async () => {
     if (isPrivate || isPublic) {
     try {
-      const response = await fetch(`${BACKEND_URL}/communities/create`, {
+      const response = await fetch(`${BACKEND_URL}/communities/create/${token}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
