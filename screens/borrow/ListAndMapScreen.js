@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  ActivityIndicator
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import MapView, { Marker } from "react-native-maps";
@@ -29,15 +30,11 @@ export default function ListAndMapScreen({ route, navigation }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedItemInfo, setSelectedItemInfo] = useState(null);
   const [mapObjects, setMapObjects] = useState([]);
-  const [borrowText, setBorrowText] = useState(""); // State to manage the borrowed text
   const [isBorrowModalVisible, setIsBorrowModalVisible] = useState(false); // State to manage modal visibility
-  const [isDiscussionModalVisible, setIsDiscussionModalVisible] =
-    useState(false);
   const [data, setData] = useState([]);
 
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
-  const [searchError, setSearchError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
 
@@ -64,20 +61,18 @@ export default function ListAndMapScreen({ route, navigation }) {
     }
   }, [searchTerm]);
 
-
   // Gère la sélection d'un élément de la liste
   const handleItemPress = async (item) => {
     setSelectedItem(item === selectedItem ? null : item);
     setSelectedItemInfo(item === selectedItemInfo ? null : item);
-    console.log("selectedItemInfo 1",selectedItemInfo)
+    console.log("selectedItemInfo 1", selectedItemInfo)
     setIsModalVisible(true);
-  
 
     // Récupère les objets pour la carte
     const mapResults = await fetchFeed(item);
     setMapObjects(mapResults);
-
   };
+
   const fetchFeed = async () => {
     try {
       const response = await fetch(`${BACKEND_URL}/communities/feed/${token}`);
@@ -87,30 +82,22 @@ export default function ListAndMapScreen({ route, navigation }) {
       }
       const data = await response.json();
       const mapMarkersData = data.items.map((item) => ({
-        name: item.name,
+        title: item.name,
         latitude: item.owner.address.latitude,
         longitude: item.owner.address.longitude,
         distance: item.distance,
       }));
       setMapObjects(mapMarkersData);
       setData(data.items);
-      // Ici, vous pouvez manipuler les données reçues du serveur
-      console.log("data.items", data.items)
-      console.log("feed", data);
     } catch (error) {
       console.error("Une erreur s'est produite:", error);
     }
   };
 
-  const fetchSearchResults = async () => {
+  const fetchSearchResults = async (item) => {
     try {
       setSearchLoading(true);
-      setSearchError(null);
-      console.log("Recherche en cours avec le terme :", searchTerm);
-  
-      // Extract communitiesId from selectedItemInfo
-      const communitiesId = selectedItemInfo?.availableIn?.map((community) => community._id) || [];
-  
+
       const response = await fetch(`${BACKEND_URL}/search`, {
         method: "POST",
         headers: {
@@ -118,69 +105,57 @@ export default function ListAndMapScreen({ route, navigation }) {
         },
         body: JSON.stringify({
           token: token,
-          name: searchTerm,
-          communitiesId: communitiesId,
+          name: item,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (data.result) {
-        console.log("Résultats de la recherche :", data.searchresult);
-  
         const mapMarkersData = data.searchresult.map((item) => ({
           title: item.name,
           latitude: item.owner.address.latitude,
           longitude: item.owner.address.longitude,
           distance: item.distance,
         }));
+
         setMapObjects(mapMarkersData);
         setSearchResults(data.searchresult);
       } else {
         console.log("Erreur de recherche :", data.error);
-  
         setSearchResults([]);
-        setSearchError(data.error);
       }
     } catch (error) {
       console.log("Erreur :", error.message);
-  
       setSearchResults([]);
-      setSearchError(error.message);
     } finally {
       setSearchLoading(false);
     }
   };
 
-  	/**
-	 * Fonction pour emprunter un objet
-	 */  
-    const handleBorrow = async () => {
-        const response = await fetch(`${BACKEND_URL}/transactions/borrow/${token}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({_id: selectedItemInfo._id })
-        });
-    
-        const data = await response.json();
+  /**
+   * Fonction pour emprunter un objet
+   */
+  const handleBorrow = async () => {
+    const response = await fetch(`${BACKEND_URL}/transactions/borrow/${token}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ _id: selectedItemInfo._id })
+    });
 
-        console.log("response", response)
-    
-        if (response.ok) {
-          fetchFeed();
-          console.log(data.message); // Affiche "Objet emprunté avec succès !! :D"
-        } else {
-          console.log(data.error); // Affiche l'erreur s'il y en a une
-        }
-    };
+    const data = await response.json();
+
+    if (response.ok) {
+      fetchFeed();
+    } else {
+      console.log(data.error);
+    }
+  };
 
   const handleBorrowButtonPress = () => {
     setIsBorrowModalVisible(true);
-  };
-  const handleDiscussionModalVisible = () => {
-    setisDiscussionModalVisible(true);
   };
 
   // SearchRes sera défini qu'e lorsqu'après l'initialisation du composant
@@ -200,8 +175,8 @@ export default function ListAndMapScreen({ route, navigation }) {
         style={styles.iconFilter}
       />
 
-      <Text style={styles.username}>{item.owner.username}</Text>
       <Text style={styles.itemTitleObj}>{item.name}</Text>
+      <Text style={styles.username}>{item.owner.username}</Text>
       {item.isAvailable && (
         <Text style={styles.dispoText}>Dispo !</Text>
       )}
@@ -229,8 +204,8 @@ export default function ListAndMapScreen({ route, navigation }) {
         style={styles.iconFilter}
       />
 
-      <Text style={styles.username}>{item.owner.username}</Text>
       <Text style={styles.itemTitleObj}>{item.name}</Text>
+      <Text style={styles.username}>{item.owner.username}</Text>
       {item.isAvailable && (
         <Text style={styles.dispoText}>Dispo !</Text>
       )}
@@ -362,7 +337,13 @@ export default function ListAndMapScreen({ route, navigation }) {
           {selectedTab === "Liste" ? (
             // Liste des éléments
             <ScrollView>
+              {/* Loading spinner pendant le chargement de la recherche */}
+              <ActivityIndicator animating={searchLoading} size="large" color="#198EA5" />
+
+              {/* Affichage du résultat de la recherche */}
               {selectedTab === "Liste" && searchRes ? searchRes : undefined}
+
+              {/* Affichge du feed de base */}
               {selectedTab === "Liste" && !searchRes ? feedRes : undefined}
             </ScrollView>
           ) : (
@@ -374,8 +355,8 @@ export default function ListAndMapScreen({ route, navigation }) {
                   initialRegion={{
                     latitude: location?.coords?.latitude || 37.78825,
                     longitude: location?.coords?.longitude || -122.4324,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
+                    latitudeDelta: 0.8,
+                    longitudeDelta: 0.8,
                   }}
                 >
                   {mapObjects.map((mapObj, i) => {
@@ -412,9 +393,8 @@ export default function ListAndMapScreen({ route, navigation }) {
             {selectedItemInfo && (
               <View style={styles.modalContent}>
                 <Text style={styles.modalTitle}>{selectedItemInfo.name}</Text>
-                
+
                 <Text>de : {selectedItemInfo.owner.username}</Text>
-                <Text>au : {selectedItemInfo.owner.address.street}, {selectedItemInfo.owner.address.zipCode}, {selectedItemInfo.owner.address.city}</Text>               
                 <TouchableOpacity
                   onPress={handleBorrowButtonPress}
                   style={styles.emprunterButton}
@@ -461,7 +441,6 @@ export default function ListAndMapScreen({ route, navigation }) {
                     <TouchableOpacity
                       onPress={() => {
                         setIsBorrowModalVisible(false);
-                        setIsDiscussionModalVisible(true);
                       }}
                       style={[styles.modalButton, styles.cancelButton]}
                     >
@@ -477,31 +456,6 @@ export default function ListAndMapScreen({ route, navigation }) {
                       <Text style={styles.modalButtonText}>Oui</Text>
                     </TouchableOpacity>
                   </View>
-                </View>
-              </View>
-            </Modal>
-            <Modal
-              animationType="slide"
-              transparent={true}
-              visible={isDiscussionModalVisible}
-              onRequestClose={() => {
-                setIsDiscussionModalVisible(false);
-              }}
-            >
-              <View
-                style={[styles.modalContainer, styles.modalDiscussionContainer]}
-              >
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>Discussion</Text>
-                  <Text>Contenu de la discussion...</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setIsDiscussionModalVisible(false);
-                    }}
-                    style={styles.modalCloseButton}
-                  >
-                    <Text style={styles.modalCloseButtonText}>Fermer</Text>
-                  </TouchableOpacity>
                 </View>
               </View>
             </Modal>
@@ -719,21 +673,18 @@ const styles = StyleSheet.create({
   iconX: {
     textAlign: "center",
   },
-  modalDiscussionContainer: {
-    justifyContent: "flex-start",
-    marginTop: 10,
-  },
   username: {
-    fontWeight: "bold", // Vous pouvez ajuster le style en conséquence
-    color: "blue", // Couleur de surlignage
+    fontWeight: "bold",
+    color: "#198EA5", 
   },
   dispoText: {
-    color: "green", // Couleur du texte "Dispo !"
-    fontWeight: "bold", // Style en gras
+    color: "#353639", // Couleur du texte "Dispo !"
+    fontWeight: "bold",
     marginTop: 5, // Espacement par rapport au texte principal
   },
   itemTitleObj: {
-    color: "green",
+    color: "#126171",
     fontWeight: "bold",
+    fontSize: 18,
   },
 });
