@@ -1,10 +1,26 @@
-import { StyleSheet } from 'react-native';
+import { Dimensions, StatusBar, StyleSheet } from 'react-native';
+
+export const Colors = {
+  ttkGreen: '#198EA5',
+  ttkBlack: '#353639'
+};
+
+export const inputRadius = 15;
+export const btnRadius = 10;
+export const ttkFont = 'Tuffy';
+export const ttkBoldFont = 'Tuffy-Bold';
+export const ttkItalicFont = 'Tuffy-Italic';
 
 export default StyleSheet.create({
 	container: {
 		flex: 1,
-		marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-		backgroundColor: '#F8FCFB'
+		backgroundColor: '#F8FCFB',
+	},
+  buttonsContainers: {
+		flex: 1,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-evenly',
 	},
 	textContent: {
 		alignItems: 'center',
@@ -13,12 +29,14 @@ export default StyleSheet.create({
 	},
 	h1: {
 		fontSize: 40,
+    fontFamily: ttkFont,
 		fontWeight: 'bold',
-		color: '#353639',
+		color: Colors.ttkBlack,
 	},
 	h5: {
 		fontSize: 20,
-		color: '#353639',
+    fontFamily: ttkFont,
+		color: Colors.ttkBlack,
 	},
 	btnFB: {
 		flexDirection: 'row',
@@ -128,5 +146,42 @@ export default StyleSheet.create({
 		borderRightColor: '#198EA5',
 		borderRightWidth: 2,
 		borderRadius: 10,
-	}
+	},
+  inputWithIcon: {
+    flex: 1,
+    flexShrink: 1,
+    alignItems: 'center',
+		justifyContent: 'space-evenly',
+    flexDirection: 'row',
+    borderColor: Colors.ttkGreen,
+    borderWidth: 1,
+    width: Dimensions.get('screen').width * 0.85,
+    borderRadius: inputRadius
+  },
+  filledButtonWithIcon: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.ttkGreen,
+    backgroundColor: Colors.ttkGreen,
+    width: Dimensions.get('screen').width * 0.85,
+    borderRadius: btnRadius,
+  },
+  outlinedButtonWithIcon: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.ttkGreen,
+    width: Dimensions.get('screen').width * 0.85,
+    borderRadius: btnRadius,
+  },
+  input: {
+    fontFamily: ttkFont,
+    padding: 10,
+    // height: 40
+  }
 });

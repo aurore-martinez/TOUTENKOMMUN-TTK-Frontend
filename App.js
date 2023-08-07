@@ -69,7 +69,7 @@ const TabNavigator = () => {
 
 export default function App() {
 	const [fontsLoaded] = useFonts({
-		'Tuffy-Regular': require('./assets/fonts/Tuffy-Regular.ttf'),
+		'Tuffy': require('./assets/fonts/Tuffy-Regular.ttf'),
 		'Tuffy-Bold': require('./assets/fonts/Tuffy-Bold.ttf'),
 		'Tuffy-Italic': require('./assets/fonts/Tuffy-Italic.ttf')
 	});
