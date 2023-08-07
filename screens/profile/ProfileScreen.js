@@ -261,58 +261,58 @@ export default function ProfileScreen({ navigation }) {
     try {
       const response = await fetch(
         `${BACKEND_URL}/users/profil/objects/${token}`
-        );
-        const data = await response.json();
-        
-        if (data.result) {
-          console.log("User objects fetched successfully:", data.objects);
-          setUserObjects(data.objects);
-        } else {
-          console.log("Error fetching user objects:", data.error);
-        }
-      } catch (error) {
-        console.error("Error fetching user objects:", error.message);
-      }
-    };
-    
-    // Affichage des commu d'un user
-    const getUserCommu = async () => {
-      const response = await fetch(`${BACKEND_URL}/users/profil/${token}/communities`);
-      
-      const dataCommu = await response.json();
-      
-      if (dataCommu.result) {
-        console.log('dataCommu', dataCommu.communities);
-        setCommunities(dataCommu.communities);
+      );
+      const data = await response.json();
+
+      if (data.result) {
+        console.log('Les objets du user ont bien été trouvées:', data.objects);
+        setUserObjects(data.objects);
       } else {
-        console.log('Error', dataCommu.error);
+        console.log("Erreur fetching les objets du user", data.error);
       }
+    } catch (error) {
+      console.error("Error fonction getUserObjects:", error.message);
     }
-    
-    //fonction logout
-    const handleLogout = () => {
-      setEmail("");
-      setAddress("");
-      setUsername("");
-      setPhoto("");
-      setShowCommunities(false);
-      setShowPrets(false);
-      setShowEmprunts(false);
-      setShowObjets(false);
-      setUserObjects([]);
-      setName("");
-      setCommunities(null);
-      setDescription("");
-      dispatch(logout());
-      
-      navigation.navigate('SignIn');
-    };
-    
-    
-    
-    if (!hasCameraPermission || !isFocused || !isCameraActive) {
-      return (
-        <SafeAreaView style={styles.container}>
+  };
+
+  // Affichage des commu d'un user
+  const getUserCommu = async () => {
+     const response = await fetch(`${BACKEND_URL}/users/profil/${token}/communities`);
+
+     const dataCommu = await response.json();
+
+     if (dataCommu.result) {
+       console.log('Les Commu du user ont bien été trouvées:', dataCommu.communities);
+       setCommunities(dataCommu.communities);
+     } else {
+       console.log('Erreur fetching les commu du user:', dataCommu.error);
+     }
+   }
+
+   //fonction logout
+   const handleLogout = () => {
+    setEmail("");
+    setAddress("");
+    setUsername("");
+    setPhoto("");
+    setShowCommunities(false);
+    setShowPrets(false);
+    setShowEmprunts(false);
+    setShowObjets(false);
+    setUserObjects([]);
+    setName("");
+    setCommunities(null);
+    setDescription("");
+    dispatch(logout());
+  
+    navigation.navigate('SignIn');
+  };
+
+
+
+  if (!hasCameraPermission || !isFocused || !isCameraActive) {
+    return (
+      <SafeAreaView style={styles.container}>
         {/*HEADER*/}
         <View style={styles.header}>
         <Text style={styles.title}>TOUTENKOMMUN</Text>
