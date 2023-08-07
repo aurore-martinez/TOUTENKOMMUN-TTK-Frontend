@@ -210,13 +210,13 @@ const dispatch = useDispatch();
       const data = await response.json();
 
       if (data.result) {
-        console.log("User objects fetched successfully:", data.objects);
+        console.log('Les objets du user ont bien été trouvées:', data.objects);
         setUserObjects(data.objects);
       } else {
-        console.log("Error fetching user objects:", data.error);
+        console.log("Erreur fetching les objets du user", data.error);
       }
     } catch (error) {
-      console.error("Error fetching user objects:", error.message);
+      console.error("Error fonction getUserObjects:", error.message);
     }
   };
 
@@ -227,10 +227,10 @@ const dispatch = useDispatch();
      const dataCommu = await response.json();
 
      if (dataCommu.result) {
-       console.log('dataCommu', dataCommu.communities);
+       console.log('Les Commu du user ont bien été trouvées:', dataCommu.communities);
        setCommunities(dataCommu.communities);
      } else {
-       console.log('Error', dataCommu.error);
+       console.log('Erreur fetching les commu du user:', dataCommu.error);
      }
    }
 
