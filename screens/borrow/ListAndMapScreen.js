@@ -12,18 +12,22 @@ import {
 	ScrollView,
 	Modal,
 	ActivityIndicator,
-	Dimensions
+	Dimensions,
+  Image
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { BACKEND_URL } from "../../Constants";
 import { useSelector } from "react-redux";
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 
 
 // Composant principal
 export default function ListAndMapScreen({ route, navigation }) {
+  // États pour gérer l'onglet sélectionné, la localisation, l'élément sélectionné et la modal
 	// États pour gérer l'onglet sélectionné, la localisation, l'élément sélectionné et la modal
 	const [selectedTab, setSelectedTab] = useState("Liste");
 	const [location, setLocation] = useState(null);
@@ -33,6 +37,8 @@ export default function ListAndMapScreen({ route, navigation }) {
 	const [mapObjects, setMapObjects] = useState([]);
 	const [isBorrowModalVisible, setIsBorrowModalVisible] = useState(false); // State to manage modal visibility
 	const [data, setData] = useState([]);
+  const [isModalLogoutVisible, setModalLogoutVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
 	const [searchLoading, setSearchLoading] = useState(false);
 	const [searchResults, setSearchResults] = useState([]);
@@ -154,7 +160,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ _id: selectedItemInfo._id })
+			body: JSON.stringify({ _id: selectedItemInfo._id, endDate: selectedDate })
 		});
 
 		const data = await response.json();
@@ -166,7 +172,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 		}
 	};
 
-	const handleBorrowButtonPress = () => {
+  const handleBorrowButtonPress = () => {
 		setIsBorrowModalVisible(true);
 	};
 
@@ -182,133 +188,175 @@ export default function ListAndMapScreen({ route, navigation }) {
 
 		setUserCommunities(filtered);
 	};
+  // SearchRes sera défini qu'après l'initialisation du composant
+  const searchRes = searchResults && searchResults.map((item, index) => (
+    <TouchableOpacity
+      key={index}
+      style={[
+        styles.listItem,
+        selectedItem === item && styles.selectedItem,
+      ]}
+      onPress={() => handleItemPress(item)}
+    >
+    <View style={styles.allObjectContent}>  
+      <View style={styles.photoEdit}>
+        {item.photo ? (
+        <Image source={{ uri: item.photo }} style={styles.photos} />
+        ) : (
+        <FontAwesome name="image" size={100} color="#198EA5" />
+        )}
+      </View>
+      <View style={styles.descriptionObjectList}>
+        <View style={styles.textObjet}>
+        <Text style={styles.itemTitleObj}>{item.name}</Text>
+        <Text style={styles.username}>{item.owner.username}</Text>
+        </View>
+        <View style={styles.dispoObjet}>
+        {item.isAvailable && (
+        <Text style={styles.dispoText}>Disponible !</Text>
+        )}
+        {item.distance && (
+        <Text style={styles.distanceText}>
+          {item.distance} km
+        </Text>
+        )}
+        <Text>Communautés : {item.availableIn.map(e => e.nameCommu).join(', ')}</Text>
+        </View>
+      </View>
+    </View>
+    </TouchableOpacity>
+  ));
 
-	// SearchRes ne sera défini qu'après l'initialisation du composant
-	const searchRes = searchResults && searchResults.map((item, index) => (
-		<TouchableOpacity
-			key={index}
-			style={[
-				styles.listItem,
-				selectedItem === item && styles.selectedItem,
-			]}
-			onPress={() => handleItemPress(item)}
-		>
-			<FontAwesome
-				name={item.icon}
-				size={20}
-				color="black"
-				style={styles.iconFilter}
-			/>
+  const feedRes = data.map((item, index) => (
+    <TouchableOpacity
+      key={index}
+      style={[
+        styles.listItem,
+        selectedItem === item && styles.selectedItem,
+      ]}
+      onPress={() => handleItemPress(item)}
+    >
+    <View style={styles.allObjectContent}>  
+      <View style={styles.photoEdit}>
+        {item.photo ? (
+        <Image source={{ uri: item.photo }} style={styles.photos} />
+        ) : (
+        <FontAwesome name="image" size={100} color="#198EA5" />
+        )}
+      </View>
+      <View style={styles.descriptionObjectList}>
+        <View style={styles.textObjet}>
+        <Text style={styles.itemTitleObj}>{item.name}</Text>
+        <Text style={styles.username}>{item.owner.username}</Text>
+        </View>
+        <View style={styles.dispoObjet}>
+        {item.isAvailable && (
+        <Text style={styles.dispoText}>Disponible !</Text>
+        )}
+        {item.distance && (
+        <Text style={styles.distanceText}>
+          {item.distance} km
+        </Text>
+        )}
+        <Text>Communautés : {item.availableIn.map(e => e.nameCommu).join(', ')}</Text>
+        </View>
+      </View>
+    </View>
+    </TouchableOpacity>
+  ));
 
-			<Text style={styles.itemTitleObj}>{item.name}</Text>
-			<Text style={styles.username}>{item.owner.username}</Text>
-			{item.isAvailable && (
-				<Text style={styles.dispoText}>Dispo !</Text>
-			)}
-			{item.distance && (
-				<Text style={styles.distanceText}>
-					{item.distance} km
-				</Text>
-			)}
-      <Text>Communautés : {item.availableIn.map(e => e.nameCommu).join(', ')}</Text>
-		</TouchableOpacity>
-	));
+  const openModalLogout = () => {
+    setModalLogoutVisible(true)
+  }
 
-	const feedRes = data.map((item, index) => (
-		<TouchableOpacity
-			key={index}
-			style={[
-				styles.listItem,
-				selectedItem === item && styles.selectedItem,
-			]}
-			onPress={() => handleItemPress(item)}
-		>
-			<FontAwesome
-				name={item.icon}
-				size={20}
-				color="black"
-				style={styles.iconFilter}
-			/>
+  const closeModalLogout = () => {
+    setModalLogoutVisible(false)
+  }
 
-			<Text style={styles.itemTitleObj}>{item.name}</Text>
-			<Text style={styles.username}>{item.owner.username}</Text>
-			{item.isAvailable && (
-				<Text style={styles.dispoText}>Dispo !</Text>
-			)}
-			{item.distance && (
-				<Text style={styles.distanceText}>
-					{item.distance} km
-				</Text>
-			)}
-      <Text>Communautés : {item.availableIn.map(e => e.nameCommu).join(', ')}</Text>
-		</TouchableOpacity>
-	));
+  const handleLogout = () => {
+    setEmail("");
+    setUsername("");
+    setPhoto("");
+    setShowCommunities(false);
+    setShowPrets(false);
+    setShowEmprunts(false);
+    setShowObjets(false);
+    setUserObjects([]);
+    setName("");
+    setCommunities(null);
+    setDescription("");
+    dispatch(logout());
+  
+    navigation.navigate('SignIn');
+  };
 
-	// Rendu du composant
-	return (
-		<SafeAreaView>
-			<KeyboardAvoidingView
-				behavior={Platform.OS === "ios" ? "padding" : "height"}
-			>
-				{/* En-tête */}
-				<View style={styles.header}>
-					<Text style={styles.title}>TOUTENKOMMUN</Text>
-					<FontAwesome
-						style={styles.userIcon}
-						name="user"
-						size={20}
-						color="white"
-					/>
-				</View>
-				<StatusBar style="auto" />
+  // Rendu du composant
+  return (
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        {/* En-tête */}
+        <View style={styles.header}>
+          <Text style={styles.title}>TOUTENKOMMUN</Text>
+          <FontAwesome style={styles.userIcon} name="user" onPress={openModalLogout}/>
+        </View>
+        <StatusBar style="auto" />
 
-				{/* Section de recherche */}
-				<View style={styles.contentTop}>
-					<Text style={styles.titleh}>
-						Fil d'actualité de
-						<Text style={styles.titleh1}> [ma communauté]</Text>
-					</Text>
-					<View style={styles.rowSearch}>
-						<View style={styles.row}>
-							<FontAwesome
-								name="search"
-								size={20}
-								color="#198EA5"
-								style={styles.iconSearch}
-							/>
-							<TextInput
-								placeholder="Je recherche..."
-								autoCapitalize="none"
-								value={searchTerm}
-								onChangeText={setSearchTerm}
-							/>
-						</View>
-						<TouchableOpacity
-							activeOpacity={0.8}
-							onPress={() => {
-								if (searchTerm) {
-									console.log("searchTerm:", searchTerm)
-									fetchSearchResults(searchTerm);
-								}
-							}}
-						>
-							<View style={{ backgroundColor: '#198EA5', height: 40, justifyContent: 'center', paddingHorizontal: 10, borderRadius: 10 }}>
-								<FontAwesome name="search" size={20} color='white' />
-							</View>
-						</TouchableOpacity>
+        <View style={styles.pageContent}>
 
-						<TouchableOpacity activeOpacity={0.8} onPress={() => setModalFilterVisible(true)}>
-							<View style={styles.filter}>
-								<FontAwesome
-									name="sliders"
-									size={20}
-									color="#EEFCFF"
-									style={styles.iconFilter}
-								/>
-							</View>
-						</TouchableOpacity>
-					</View>
-				</View>
+        {/* Section de recherche */}
+        <View style={styles.contentTop}>
+          <Text style={styles.titleh}>
+            Fil d'actualité de mes communautés
+          </Text>
+        </View> 
+          <View style={styles.rowSearch}>
+            <View style={styles.row}>
+              <FontAwesome
+                name="search"
+                size={20}
+                color="#198EA5"
+                style={styles.iconSearchInput}
+              />
+              <TextInput
+                placeholder="Je recherche..."
+                autoCapitalize="none"
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+              />
+            </View>
+            <View style={styles.buttons}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                if (searchTerm) {
+                  console.log("searchTerm:", searchTerm)
+                  fetchSearchResults(searchTerm);
+                }
+              }}
+            >
+              <View style={styles.filter}>
+              <FontAwesome
+                  name="search"
+                  size={20}
+                  color="#EEFCFF"
+                  style={styles.iconFilter}
+                />
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.8} onPress={() => setModalFilterVisible(true)}>
+              <View style={styles.filter}>
+                <FontAwesome
+                  name="sliders"
+                  size={20}
+                  color="#EEFCFF"
+                  style={styles.iconFilter}
+                />
+              </View>
+            </TouchableOpacity>
+            </View>
+          </View>
 
 				{/* Barre de navigation entre Liste et Carte */}
 				<View style={styles.rowMenu}>
@@ -407,90 +455,113 @@ export default function ListAndMapScreen({ route, navigation }) {
 						</View>
 					)}
 				</View>
+      </View>
 
-				{/* Modal pour afficher les détails de l'élément sélectionné */}
-				<Modal
-					animationType="slide"
-					transparent={true}
-					visible={isModalVisible}
-					onRequestClose={() => {
-						setIsModalVisible(false);
-					}}
-				>
-					<View style={styles.modalContainer}>
-						{selectedItemInfo && (
-							<View style={styles.modalContent}>
-								<Text style={styles.modalTitle}>{selectedItemInfo.name}</Text>
+        {/* Modal emprunt */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isModalVisible}
+          onRequestClose={() => {
+            setIsModalVisible(false);
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPressOut={() => {
+              setIsModalVisible(false)
+              setSelectedDate(new Date());
+            }}  style={styles.modalContainer}>
+            {selectedItemInfo && (
+              <View style={styles.modalContent}>
+                <View style={styles.modalTitle}>
+                  <Text style={styles.modalJemprunteTextTitle}>Veux-tu confirmer l'emprunt ?</Text>
+                </View>          
+                <View style={styles.objectDescriptionModal}>
+                    {selectedItemInfo.photo ? (
+                    <Image source={{ uri: selectedItemInfo.photo }} style={styles.photoModal} />
+                    ) : (
+                    <FontAwesome name="image" size={70} color="#198EA5" />
+                    )}
+                  <View>
+                    <Text style={styles.modalTitleObject}>{selectedItemInfo.name}</Text>
+                    <Text style={styles.modalTitleText}>Prêteur : "{selectedItemInfo.owner.username}"</Text>
+                  </View>
+                </View>
+                <View style={styles.modalJemprunteTitle}>
+                  <Text style={styles.modalJemprunteTextTitle}>Jusqu'au :</Text>
+                </View>
+                <View style={styles.datePickerContainer}>
+                  <DateTimePicker
+                    style={styles.datePicker}
+                    value={selectedDate}
+                    mode="date"
+                    format="DD-MM-YYYY"
+                    minimumDate={new Date()}
+                    onChange={(event, date) => {
+                      if (date !== undefined) {
+                        setSelectedDate(date);
+                      }
+                    }}
+                  />
+                </View>
+                <View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      handleBorrow(selectedItemInfo)
+                      setIsModalVisible(false);
+                      setSelectedDate(new Date());
+                    }}
+                    style={styles.emprunterButton}
+                  >
+                  <FontAwesome5
+                    name="hands-helping"
+                    size={20}
+                    color="white"
+                    style={styles.iconEmprunter}
+                  />
+                  <Text style={styles.emprunterButtonText}>J'emprunte !</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
 
-								<Text>de : {selectedItemInfo.owner.username}</Text>
-								<TouchableOpacity
-									onPress={handleBorrowButtonPress}
-									style={styles.emprunterButton}
-								>
-									<FontAwesome
-										name="check"
-										size={20}
-										color="white"
-										style={styles.iconEmprunter}
-									/>
-									<Text style={styles.emprunterButtonText}>Emprunter</Text>
-								</TouchableOpacity>
-								<TouchableOpacity
-									onPress={() => {
-										setIsModalVisible(false);
-									}}
-									style={styles.modalCloseButton}
-								>
-									<Text style={styles.modalCloseButtonText}>Fermer</Text>
-								</TouchableOpacity>
-							</View>
-						)}
-						{/* Borrow Modal */}
-						<Modal
-							animationType="slide"
-							transparent={true}
-							visible={isBorrowModalVisible}
-							onRequestClose={() => {
-								setIsBorrowModalVisible(false);
-							}}
-						>
-							<View style={styles.modalContainer}>
-								<View style={styles.modalContent}>
-									<Text style={styles.modalTitle}>Veux tu emprunter ? </Text>
-									<View style={styles.iconContainer}>
-										<FontAwesome
-											style={styles.iconX}
-											name="camera"
-											size={50}
-											color="#198EA5"
-										/>
-									</View>
-									<View style={styles.modalButtonContainer}>
-										<TouchableOpacity
-											onPress={() => {
-												setIsBorrowModalVisible(false);
-											}}
-											style={[styles.modalButton, styles.cancelButton]}
-										>
-											<Text style={styles.modalButtonText}>Annuler</Text>
-										</TouchableOpacity>
-										<TouchableOpacity
-											onPress={() => {
-												handleBorrow(selectedItemInfo)
-												setIsBorrowModalVisible(false);
-											}}
-											style={[styles.modalButton, styles.confirmButton]}
-										>
-											<Text style={styles.modalButtonText}>Oui</Text>
-										</TouchableOpacity>
-									</View>
-								</View>
-							</View>
-						</Modal>
-					</View>
-				</Modal>
+                   {/*MODAL LOGOUT*/}
+        <Modal
+          visible={isModalLogoutVisible}
+          animationType="slide"
+          transparent={true}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPressOut={closeModalLogout} // Ferme la modal lorsque vous cliquez en dehors d'elle
+            style={styles.modalContainer}
+          >
+            <TouchableOpacity activeOpacity={1} style={styles.modalLogoutContent}>
+              {/* Contenu de la modal */}
+              <View style={styles.modalBtnContent}>
+                {/* Bouton pour supprimer la communauté */}
+                <TouchableOpacity
+                  style={styles.deconnecterButton}
+                  onPress={handleLogout}
+                >                 
+                  <FontAwesome
+                    style={styles.ppIcon}
+                    name="sign-out"
+                    size={20}
+                    color="#F8FCFB"
+                  />
+                  <Text style={styles.smsButtonText}>Se déconnecter</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
 
-				{/* Modal de filtre sur les communautés */}
+        </TouchableOpacity>
+        </Modal>
+
+        				{/* Modal de filtre sur les communautés */}
 				<Modal
 					animationType="slide"
 					transparent={true}
@@ -521,224 +592,318 @@ export default function ListAndMapScreen({ route, navigation }) {
 						</View>
 					</View>
 				</Modal>
-			</KeyboardAvoidingView>
-		</SafeAreaView>
-	);
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-	header: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		padding: 10,
-		height: "10%",
-		backgroundColor: "#198EA5",
-	},
-	title: {
-		fontSize: 20,
-		fontWeight: "600",
-		color: "white",
-	},
-	titleh: {
-		fontSize: 20,
-		fontWeight: "600",
-		color: "#353639",
-	},
-	titleh1: {
-		fontSize: 20,
-		fontWeight: "600",
-		color: "#198EA5",
-	},
-	userIcon: {
-		padding: 10,
-	},
-	contentTop: {
-		width: "100%",
-		height: "20%",
-		backgroundColor: "#F8FCFB",
-		justifyContent: "space-between",
-		alignItems: "center",
-		paddingVertical: 20,
-	},
-	row: {
-		flexDirection: "row",
-		justifyContent: "flex-start",
-		alignItems: "center",
-		width: 250,
-		height: 50,
-		backgroundColor: "#F8FCFB",
-		borderColor: "#198EA5",
-		borderWidth: 2,
-		fontSize: 16,
-		borderRadius: 10,
-		paddingLeft: "5%",
-		marginVertical: 12,
-	},
-	contentList: {
-		width: "100%",
-		height: "60%",
-		backgroundColor: "#F8FCFB",
-		borderTopWidth: 1,
-	},
-	rowMenu: {
-		flexDirection: "row",
-		justifyContent: "space-evenly",
-		alignItems: "center",
-		width: "100%",
-		height: "10%",
-		backgroundColor: "#F8FCFB",
-	},
-	filter: {
-		borderRadius: 10,
-		width: 40,
-		height: 40,
-		justifyContent: "center",
-		alignItems: "center",
-		backgroundColor: "#198EA5",
-	},
-	rowSearch: {
-		flexDirection: "row",
-		justifyContent: "space-evenly",
-		alignItems: "center",
-		width: "100%",
-		marginTop: 20,
-	},
-	iconTextContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-	},
-	iconText: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: "#198EA5",
-		marginLeft: 5,
-	},
-	map: {
-		flex: 1,
-	},
-	selectedTab: {
-		borderBottomColor: "#198EA5",
-		borderBottomWidth: 2,
-	},
-	selectedTabText: {
-		color: "#198EA5",
-	},
-	listItem: {
-		alignItems: "center",
-		flexDirection: "column",
-		borderBottomWidth: 1,
-		borderBottomColor: "#ddd",
-		padding: 30,
-	},
-	listIcon: {
-		marginRight: 10,
-	},
-	mapIcon: {
-		marginRight: 10,
-	},
-	itemTitle: {
-		fontSize: 16,
-		fontWeight: "500",
-		color: "#333",
-		marginLeft: 10,
-	},
-	selectedItem: {
-		backgroundColor: "#EEFCFF",
-	},
-	modalContainer: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		backgroundColor: "rgba(0, 0, 0, 0.5)",
-	},
-	modalContent: {
-		backgroundColor: "#F8FCFB",
-		padding: 70,
-		borderRadius: 10,
-		marginLeft: 50,
-		marginRight: 50,
-		marginTop: 50,
-	},
-	modalTitle: {
-		fontSize: 20,
-		fontWeight: "bold",
-		marginBottom: 60,
-	},
-	modalCloseButton: {
-		marginTop: 20,
-		alignSelf: "flex-end",
-	},
-	modalCloseButtonText: {
-		color: "#198EA5",
-		fontWeight: "bold",
-	},
-	borrowButton: {
-		backgroundColor: "#198EA5",
-		borderRadius: 5,
-		padding: 10,
-		marginTop: 10,
-	},
-	emprunterButton: {
-		backgroundColor: "#198EA5",
-		borderRadius: 10,
-		padding: 10,
-	},
-	emprunterButtonText: {
-		color: "white",
-		fontWeight: "bold",
-		textAlign: "center",
-	},
-	iconEmprunter: {
-		margin: 5,
-		marginLeft: 0,
-	},
-	mapContainer: {
-		flex: 1,
-	},
-	borrowTextInput: {
-		borderColor: "#ccc",
-		borderWidth: 1,
-		borderRadius: 5,
-		padding: 10,
-		marginBottom: 10,
-		height: 100,
-	},
-	modalButtonContainer: {
-		flexDirection: "row",
-		justifyContent: "flex-end",
-	},
-	modalButton: {
-		paddingVertical: 8,
-		paddingHorizontal: 20,
-		borderRadius: 5,
-		marginLeft: 10,
-	},
-	cancelButton: {
-		backgroundColor: "#ccc",
-	},
-	confirmButton: {
-		backgroundColor: "#198EA5",
-	},
-	modalButtonText: {
-		color: "white",
-		fontWeight: "bold",
-	},
-	iconX: {
-		textAlign: "center",
-	},
-	username: {
-		fontWeight: "bold",
-		color: "#198EA5",
-	},
-	dispoText: {
-		color: "#353639", // Couleur du texte "Dispo !"
-		fontWeight: "bold",
-		marginTop: 5, // Espacement par rapport au texte principal
-	},
-	itemTitleObj: {
-		color: "#126171",
-		fontWeight: "bold",
-		fontSize: 18,
-	},
+  container: {
+    flex: 1,
+    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    height: "100%",
+    backgroundColor: "#F8FCFB",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    height: "10%",
+    backgroundColor: "#198EA5",
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "white",
+  },
+  titleh: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#353639",
+  },
+  titleh1: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#198EA5",
+  },
+  userIcon: {
+    margin: 10,
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "white",
+  },
+  pageContent: {
+    height: "90%",
+  },
+  contentTop: {
+    width: "100%",
+    height: "10%",
+    backgroundColor: "#F8FCFB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rowSearch: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: '15%',
+    backgroundColor: '#F8FCFB',
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    width: 240,
+    height: 50,
+    backgroundColor: "#F8FCFB",
+    borderColor: "#198EA5",
+    borderWidth: 2,
+    fontSize: 16,
+    borderRadius: 10,
+    paddingLeft: 10,
+    marginRight: 8,
+  },
+  iconSearchInput: {
+    marginRight: 5
+  },
+  buttons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contentList: {
+    width: "100%",
+    height: "60%",
+    backgroundColor: "#F8FCFB",
+    borderTopWidth: 1,
+  },
+  rowMenu: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    width: "100%",
+    height: "10%",
+    backgroundColor: "#F8FCFB",
+  },
+  filter: {
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+    paddingLeft: 3,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#198EA5",
+    margin: 5,
+  },
+  iconTextContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#198EA5",
+    marginLeft: 3,
+  },
+  map: {
+    flex: 1,
+  },
+  selectedTab: {
+    borderBottomColor: "#198EA5",
+    borderBottomWidth: 2,
+  },
+  selectedTabText: {
+    color: "#198EA5",
+  },
+  contentList: {
+    width: "100%",
+    height: "65%",
+    backgroundColor: "#F8FCFB",
+  },
+  listItem: {
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderTopColor: "#198EA5",
+    height: 120,
+  },
+  iconFilter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 1,
+  },
+  listIcon: {
+    marginRight: 10,
+  },
+  mapIcon: {
+    marginRight: 10,
+  },
+  itemTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
+    marginLeft: 10,
+  },
+  selectedItem: {
+    backgroundColor: "#EEFCFF",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#F8FCFB",
+    padding: 20,
+    borderRadius: 10,
+    width: 300,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  modalTitle: {
+    borderBottomColor: "#198EA5",
+    borderBottomWidth: 2,
+  },
+    modalJemprunteTextTitle: {
+    fontWeight: "bold",
+  },
+  objectDescriptionModal: {
+    flexDirection: 'row',
+    height: 100,
+    alignItems: 'center',
+  },
+  photoModal: {
+    width: 70,
+    height: 70,
+    borderWidth: 2,
+    borderColor: "#198EA5",
+  },
+  modalTitleObject: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginLeft: 5,
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    alignSelf: "flex-end",
+  },
+  modalCloseButtonText: {
+    color: "#198EA5",
+    fontWeight: "bold",
+  },
+  borrowButton: {
+    backgroundColor: "#198EA5",
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 10,
+  },
+    datePickerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  emprunterButton: {
+    backgroundColor: "#198EA5",
+    borderRadius: 10,
+    padding: 10,
+  },
+  emprunterButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  borrower: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  recapObjet: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  recapObjetText: {
+    fontSize: 15,
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    alignSelf: "flex-end",
+  },
+  modalCloseButtonText: {
+    color: "#198EA5",
+    fontWeight: "bold",
+  },
+  iconEmprunter: {
+    margin: 5,
+    marginLeft: 0,
+  },
+  mapContainer: {
+    flex: 1,
+  },
+  borrowTextInput: {
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    height: 100,
+  },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  modalButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  cancelButton: {
+    backgroundColor: "#ccc",
+  },
+  confirmButton: {
+    backgroundColor: "#198EA5",
+  },
+  modalButtonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  iconX: {
+    textAlign: "center",
+  },
+  photos: {
+    width: 100,
+    height: 100,
+    borderWidth: 3,
+    borderColor: "#198EA5",
+  },
+  allObjectContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  photoEdit: {
+    alignSelf: 'flex-start',
+    marginLeft: 20,
+  },
+  descriptionObjectList: {
+    justifyContent: 'space-evenly',
+    marginLeft: 20,
+    height: 100
+  },
+  itemTitleObj: {
+    color: "#198EA5",
+    fontWeight: "bold",
+    fontSize: 19,
+  },
+  username: {
+    fontWeight: "bold",
+    color: "#353639",
+  },
+  dispoText: {
+    color: "#353639",
+    fontWeight: "bold",
+  },
+
 });
