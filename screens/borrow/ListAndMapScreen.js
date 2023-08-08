@@ -210,6 +210,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 					{item.distance} km
 				</Text>
 			)}
+      <Text>Communautés : {item.availableIn.map(e => e.nameCommu).join(', ')}</Text>
 		</TouchableOpacity>
 	));
 
@@ -239,6 +240,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 					{item.distance} km
 				</Text>
 			)}
+      <Text>Communautés : {item.availableIn.map(e => e.nameCommu).join(', ')}</Text>
 		</TouchableOpacity>
 	));
 
@@ -295,7 +297,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 							</View>
 						</TouchableOpacity>
 
-						<TouchableOpacity activeOpacity={0.8} onPress={() => {setModalFilterVisible(true); console.log("commu", userCommunities)}}>
+						<TouchableOpacity activeOpacity={0.8} onPress={() => setModalFilterVisible(true)}>
 							<View style={styles.filter}>
 								<FontAwesome
 									name="sliders"
@@ -499,7 +501,10 @@ export default function ListAndMapScreen({ route, navigation }) {
 						<View style={{ alignItems: 'flex-start', backgroundColor: 'white', marginVertical: Dimensions.get('screen').height / 3.75, borderRadius: 20, paddingHorizontal: 20, marginHorizontal: Dimensions.get('screen').width / 25, paddingVertical: 15 }}>
 							<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', columnGap: 15 }}>
 								<Text style={{ fontWeight: 'bold', fontSize: 13, width: '75%' }}>Dans quelle(s) communauté(s) voulez-vous chercher ?</Text>
-								<FontAwesome name='close' size={20} style={{ backgroundColor: '#198EA5', borderRadius: 50 }} />
+
+                <TouchableOpacity onPress={() => setModalFilterVisible(false)} style={{ backgroundColor: '#198EA5', borderRadius: 50, justifyContent: 'center', alignItems: 'center', height: 20, width: 20 }}>
+								  <FontAwesome name='close' size={15} color='white' />
+                </TouchableOpacity>
 							</View>
 							<ScrollView style={{  width: '100%' }} contentContainerStyle={{ flex: 1, justifyContent: 'center', rowGap: 25 }}>
 								{
