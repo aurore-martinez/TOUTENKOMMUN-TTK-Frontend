@@ -41,7 +41,9 @@ export default function ProfileScreen({ navigation }) {
   const [name, setName] = useState("");
   const [communities, setCommunities] = useState(null);
   const [description, setDescription] = useState("");
-
+  const [prets, setPret] = useState(null);
+  const [emprunts,setEmprunt]= useState(null);
+  
   //Gestion de l'ajout et de l'affichage de l'adresse utilisateur dans une modal
   const [address, setAddress] = useState({
     street: '',
@@ -58,7 +60,7 @@ export default function ProfileScreen({ navigation }) {
   });
 
   console.log('address', address)
-
+  
   const handleEditAddress = async () => {
     setNewAddress(address); // si l'adresse existe; l'utilisateur peut la modifier
     setAddressModalVisible(true);
@@ -141,6 +143,8 @@ export default function ProfileScreen({ navigation }) {
           dispatch(addPhoto(data.photo));
           getUserObjects();
           getUserCommu();
+        getUserBorrows();
+        getUserLends();
         });
     }
   }, [token]);
@@ -295,58 +299,86 @@ export default function ProfileScreen({ navigation }) {
     try {
       const response = await fetch(
         `${BACKEND_URL}/users/profil/objects/${token}`
-      );
-      const data = await response.json();
-
-      if (data.result) {
-        console.log('Les objets du user ont bien été trouvées:', data.objects);
-        setUserObjects(data.objects);
-      } else {
-        console.log("Erreur fetching les objets du user", data.error);
+        );
+        const data = await response.json();
+        
+        if (data.result) {
+          console.log('Les objets du user ont bien été trouvées:', data.objects);
+          setUserObjects(data.objects);
+        } else {
+          console.log("Erreur fetching les objets du user", data.error);
+        }
+      } catch (error) {
+        console.error("Error fonction getUserObjects:", error.message);
       }
-    } catch (error) {
-      console.error("Error fonction getUserObjects:", error.message);
+    };
+    
+    // Affichage des commu d'un user
+    const getUserCommu = async () => {
+     const response = await fetch(`${BACKEND_URL}/users/profil/${token}/communities`);
+      
+     const dataCommu = await response.json();
+      
+     if (dataCommu.result) {
+       console.log('Les Commu du user ont bien été trouvées:', dataCommu.communities);
+       setCommunities(dataCommu.communities);
+     } else {
+       console.log('Erreur fetching les commu du user:', dataCommu.error);
+     }
+   }
+    
+    //Fetch historique des emprunts
+    const getUserBorrows = async () => {
+      const response = await fetch(`${BACKEND_URL}/transactions/borrow/${token}`);
+      
+      const dataBorrow = await response.json();
+      
+      if (dataBorrow.result) {
+        console.log("L'historique des emprunts du user ont bien été trouvées:", dataBorrow.emprunts);
+        setEmprunt(dataBorrow.emprunts);
+      } else {
+        console.log("Erreur fetching l'historique' du user:", dataBorrow.error);
+      }
     }
-  };
-
-  // Affichage des commu d'un user
-  const getUserCommu = async () => {
-    const response = await fetch(`${BACKEND_URL}/users/profil/${token}/communities`);
-
-    const dataCommu = await response.json();
-
-    if (dataCommu.result) {
-      console.log('Les Commu du user ont bien été trouvées:', dataCommu.communities);
-      setCommunities(dataCommu.communities);
-    } else {
-      console.log('Erreur fetching les commu du user:', dataCommu.error);
+    
+    
+    //Fetch historique des prêts
+    const getUserLends = async () => {
+      const response = await fetch(`${BACKEND_URL}/transactions/lend/${token}`);
+      
+      const dataLend = await response.json();
+      
+      if (dataLend.result) {
+        console.log("L'historique des prêts du user ont bien été trouvées:", dataLend.prets);
+        setPret(dataLend.prets);
+      } else {
+        console.log("Erreur fetching l'historique' du user:", dataLend.error);
+      }
     }
-  }
-
-  //fonction logout
-  const handleLogout = () => {
-    setEmail("");
-    setAddress("");
-    setUsername("");
-    setPhoto("");
-    setShowCommunities(false);
-    setShowPrets(false);
-    setShowEmprunts(false);
-    setShowObjets(false);
-    setUserObjects([]);
-    setName("");
-    setCommunities(null);
-    setDescription("");
-    dispatch(logout());
-
-    navigation.navigate('SignIn');
-  };
-
-
-
-  if (!hasCameraPermission || !isFocused || !isCameraActive) {
-    return (
-      <SafeAreaView style={styles.container}>
+   //fonction logout
+   const handleLogout = () => {
+      setEmail("");
+      setAddress("");
+      setUsername("");
+      setPhoto("");
+      setShowCommunities(false);
+      setShowPrets(false);
+      setShowEmprunts(false);
+      setShowObjets(false);
+      setUserObjects([]);
+      setName("");
+      setCommunities(null);
+      setDescription("");
+      dispatch(logout());
+    
+      navigation.navigate('SignIn');
+    };
+    
+    
+    
+    if (!hasCameraPermission || !isFocused || !isCameraActive) {
+      return (
+        <SafeAreaView style={styles.container}>
         {/*HEADER*/}
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
@@ -448,6 +480,8 @@ export default function ProfileScreen({ navigation }) {
                   />
                 </View>
               )}
+                    
+                    {/* Section - Historique des prêts */}
 
               <TouchableOpacity onPress={togglePrets} style={styles.menuItem}>
                 <Text style={styles.menuText}>Mes prêts</Text>
@@ -458,590 +492,654 @@ export default function ProfileScreen({ navigation }) {
               </TouchableOpacity>
               {showPrets && (
                 <View style={styles.subMenuContent}>
+                      <ScrollView showsVerticalScrollIndicator={false}>
                   {/* Contenu de l'historique des prêts */}
-                </View>
-              )}
-
-              <TouchableOpacity onPress={toggleEmprunts} style={styles.menuItem}>
-                <Text style={styles.menuText}>Mes emprunts</Text>
-                <FontAwesome
-                  name={showEmprunts ? "angle-up" : "angle-down"}
-                  size={20}
-                />
-              </TouchableOpacity>
-              {showEmprunts && (
-                <View style={styles.subMenuContent}>
-                  {/* Contenu de l'historique des emprunts */}
-                </View>
-              )}
-
-              <TouchableOpacity onPress={toggleObjets} style={styles.menuItem}>
-                <Text style={styles.menuText}>Mes objets</Text>
-                <FontAwesome
-                  name={showObjets ? "angle-up" : "angle-down"}
-                  size={20}
-                />
-              </TouchableOpacity>
-              {showObjets && (
-                <View style={styles.subMenuContent}>
-                  <FlatList
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    data={userObjects}
-                    keyExtractor={(item) => item._id.toString()}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity onPress={() => openModalObject(item)} style={styles.objectItem}>
-                        {
+                      {prets && prets.length > 0 ? (
+                        prets.map((pret, index) => (
+                          <View key={index} style={styles.empruntItem}>
+                          <Text style={[styles.empruntText, { fontWeight: 'bold' }]}>{pret.object.name}</Text>
+                          <Text style={styles.empruntText}>Emprunteur: {pret.borrowerUser.username}</Text>
+                          <Text style={styles.empruntText}>
+                            Date de début: {new Date(pret.startDate).toLocaleString('fr-FR', { dateStyle: 'long' })}
+                            {/* pour afficher l'heure, il faudra ajouter , timeStyle: 'short' */}
+                          </Text>
+                          <Text style={styles.empruntText}>
+                            Date de fin: {new Date(pret.endDate).toLocaleDateString('fr-FR', { dateStyle: 'long' })}
+                          </Text>
+                          <Text style={styles.empruntText}>
+                            Statut: 
+                            {pret.isFinished ? 
+                            <Text style={[styles.empruntText, { color: '#198EA5' }, { fontWeight: 'bold' }]}> Terminé</Text>
+                            : 
+                            <Text style={[styles.empruntText, { color: '#CE8D2C' }, { fontWeight: 'bold' }]}> En cours</Text>
+                            }
+                            </Text>
+                    </View>
+                          ))
+                          ) : (
+                            <Text style={styles.empruntText}>Aucun prêt trouvé.</Text>
+                    )}
+      
+                            </ScrollView>
+                            </View>
+                            )}
+                            
+                            {/* Section - Historique des emprunts */}                      
+                    <TouchableOpacity onPress={toggleEmprunts} style={styles.menuItem}>
+                      <Text style={styles.menuText}>Mes emprunts</Text>
+                      <FontAwesome
+                        name={showEmprunts ? "angle-up" : "angle-down"}
+                        size={20}
+                      />
+                    </TouchableOpacity>
+                    {showEmprunts && (
+                      <View style={styles.subMenuContent}>
+                              <ScrollView showsVerticalScrollIndicator={false}>
+                        {/* Contenu de l'historique des emprunts */}
+                              {emprunts && emprunts.length > 0 ? (
+                                emprunts.map((emprunt, index) => (
+                                  <View key={index} style={styles.empruntItem}>
+                                  <Text style={[styles.empruntText, { fontWeight: 'bold' }]}>{emprunt.object.name}</Text>
+                                  <Text style={styles.empruntText}>Prêteur: {emprunt.lenderUser.username}</Text>
+                                  <Text style={styles.empruntText}>
+                                    Date de début: {new Date(emprunt.startDate).toLocaleDateString('fr-FR', { dateStyle: 'long' })}
+                                  </Text>
+                                  <Text style={styles.empruntText}>
+                                    Date de fin: {new Date(emprunt.endDate).toLocaleDateString('fr-FR', { dateStyle: 'long' })}
+                                  </Text>
+                                  <Text style={styles.empruntText}>
+                                    Statut:
+                                    {emprunt.isFinished ? 
+                                  <Text style={[styles.empruntText, { color: '#198EA5' }, { fontWeight: 'bold' }]}> Terminé</Text>
+                                  : 
+                                  <Text style={[styles.empruntText, { color: '#CE8D2C' }, { fontWeight: 'bold' }]}> En cours</Text>
+                                  }</Text>
+                          </View>
+                                  ))
+                                  ) : (
+                                    <Text style={styles.empruntText}>Aucun emprunt trouvé.</Text>
+                                    )}
+                                    </ScrollView>
+                                    </View>
+                          )}
+            
+                          <TouchableOpacity onPress={toggleObjets} style={styles.menuItem}>
+                            <Text style={styles.menuText}>Mes objets</Text>
+                            <FontAwesome
+                              name={showObjets ? "angle-up" : "angle-down"}
+                              size={20}
+                            />
+                          </TouchableOpacity>
+                          {showObjets && (
+                            <View style={styles.subMenuContent}>
+                              <FlatList
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                data={userObjects}
+                                keyExtractor={(item) => item._id.toString()}
+                                renderItem={({ item }) => (
+                                  <TouchableOpacity onPress={() => openModalObject(item)} style={styles.objectItem}>
+                                    {
                           item.photo ?
                           <Image source={{ uri: item.photo }} style={{ width: 100, height: 100 }} resizeMode="contain" />
                           :
                           <FontAwesome name='image' size={100} />
-
+            
                         }
                         <Text>{item.name}</Text>
+                                  </TouchableOpacity>
+                                )}
+                              />
+                            </View>
+                          )}
+                        </View>
+                      </ScrollView>
+                    </View>
+            
+                    {/*MODAL LOGOUT*/}
+                    <Modal
+                      visible={isModalLogoutVisible}
+                      animationType="slide"
+                      transparent={true}
+                    >
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPressOut={closeModalLogout} // Ferme la modal lorsque vous cliquez en dehors d'elle
+                        style={styles.modalContainer}
+                      >
+                        <TouchableOpacity activeOpacity={1} style={styles.modalLogoutContent}>
+                          {/* Contenu de la modal */}
+                          <View style={styles.modalBtnContent}>
+                            {/* Bouton pour supprimer la communauté */}
+                            <TouchableOpacity
+                              style={styles.deconnecterButton}
+                              onPress={handleLogout}
+                            >
+                              <FontAwesome
+                                style={styles.ppIcon}
+                                name="sign-out"
+                                size={20}
+                                color="#F8FCFB"
+                              />
+                              <Text style={styles.smsButtonText}>Se déconnecter</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </TouchableOpacity>
                       </TouchableOpacity>
-                    )}
-                  />
-                </View>
-              )}
-            </View>
-          </ScrollView>
-        </View>
-
-        {/*MODAL LOGOUT*/}
-        <Modal
-          visible={isModalLogoutVisible}
-          animationType="slide"
-          transparent={true}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPressOut={closeModalLogout} // Ferme la modal lorsque vous cliquez en dehors d'elle
-            style={styles.modalContainer}
-          >
-            <TouchableOpacity activeOpacity={1} style={styles.modalLogoutContent}>
-              {/* Contenu de la modal */}
-              <View style={styles.modalBtnContent}>
-                {/* Bouton pour supprimer la communauté */}
-                <TouchableOpacity
-                  style={styles.deconnecterButton}
-                  onPress={handleLogout}
-                >
-                  <FontAwesome
-                    style={styles.ppIcon}
-                    name="sign-out"
-                    size={20}
-                    color="#F8FCFB"
-                  />
-                  <Text style={styles.smsButtonText}>Se déconnecter</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </Modal>
-
-        {/*MODAL AJOUT OBJET*/}
-        <TouchableOpacity onPress={openModal} style={styles.addButton}>
-          <FontAwesome name="plus" style={styles.addButtonText} />
-        </TouchableOpacity>
-        <Modal
-          visible={isModalPlusVisible}
-          animationType="slide"
-          transparent={true}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPressOut={closeModal} // Ferme la modal lorsque vous cliquez en dehors d'elle
-            style={styles.modalContainer}
-          >
-            <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
-              {/* Contenu de la modal */}
-              <View style={styles.modalInput}>
-                <Text>Nom de l'objet : </Text>
-                <TextInput
-                  style={styles.inputObjet}
-                  placeholder="Nom objet"
-                  placeholderTextColor='#353639'
-                  value={name}
-                  onChangeText={setName}
-                />
-              </View>
-              <View style={styles.modalInput}>
-                <Text>Description : </Text>
-                <TextInput
-                  style={styles.inputObjet}
-                  placeholder="Description"
-                  placeholderTextColor='#353639'
-                  value={description}
-                  onChangeText={setDescription}
-                />
-              </View>
-              <View style={styles.modalInput}>
-                <Text>Photo : </Text>
-
+                    </Modal>
+            
+                    {/*MODAL AJOUT OBJET*/}
+                    <TouchableOpacity onPress={openModal} style={styles.addButton}>
+                      <FontAwesome name="plus" style={styles.addButtonText} />
+                    </TouchableOpacity>
+                    <Modal
+                      visible={isModalPlusVisible}
+                      animationType="slide"
+                      transparent={true}
+                    >
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPressOut={closeModal} // Ferme la modal lorsque vous cliquez en dehors d'elle
+                        style={styles.modalContainer}
+                      >
+                        <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
+                          {/* Contenu de la modal */}
+                          <View style={styles.modalInput}>
+                            <Text>Nom de l'objet : </Text>
+                            <TextInput
+                              style={styles.inputObjet}
+                              placeholder="Nom objet"
+                              placeholderTextColor='#353639'
+                              value={name}
+                              onChangeText={setName}
+                            />
+                          </View>
+                          <View style={styles.modalInput}>
+                            <Text>Description : </Text>
+                            <TextInput
+                              style={styles.inputObjet}
+                              placeholder="Description"
+                              placeholderTextColor='#353639'
+                              value={description}
+                              onChangeText={setDescription}
+                            />
+                          </View>
+                          <View style={styles.modalInput}>
+                            <Text>Photo : </Text>
+            
                 {
                   objectPicture ?
                     <Image source={{ uri: objectPicture }} style={{ width: 100, height: 100 }} />
                     :
                     (
                       <TouchableOpacity onPress={() => { camera(); setPictureFromCamera('object') }} style={styles.cameraButton}>
-                        <FontAwesome name="camera" size={24} color="black" />
-                      </TouchableOpacity>
-                    )
+                                    <FontAwesome name="camera" size={24} color="black" />
+                                  </TouchableOpacity>
+                                )
                 }
               </View>
-              <View style={styles.choixCommu}>
-                <Text>Communauté(s) concerné(s) :</Text>
-                <Text>Le Kiri</Text>
-                <Text>La Moula</Text>
-              </View>
-              <View style={styles.modalBtnContent}>
-                {/* Bouton pour l'ajout d'un objet */}
-                <TouchableOpacity
-                  style={styles.addObjectButton}
-                  onPress={() => {
-                    handleAddObject();
-                    closeModal(); // Fermez la modal après avoir ajouté l'objet
-                  }}
+                          <View style={styles.choixCommu}>
+                            <Text>Communauté(s) concerné(s) :</Text>
+                            <Text>Le Kiri</Text>
+                            <Text>La Moula</Text>
+                          </View>
+                          <View style={styles.modalBtnContent}>
+                            {/* Bouton pour l'ajout d'un objet */}
+                            <TouchableOpacity
+                              style={styles.addObjectButton}
+                              onPress={() => {
+                                handleAddObject();
+                                closeModal(); // Fermez la modal après avoir ajouté l'objet
+                              }}
+                            >
+            
+            
+                              <FontAwesome
+                                style={styles.ppIcon}
+                                name="plus-square-o"
+                                size={20}
+                                color="#F8FCFB"
+                              />
+                              <Text style={styles.smsButtonText}>Ajouter</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    </Modal>
+            
+            
+                    {/*MODAL MES COMMUNAUTES*/}
+                    <Modal
+                      visible={isModalCommunityVisible}
+                      animationType="slide"
+                      transparent={true}
+                    >
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPressOut={closeModal} // Ferme la modal lorsque vous cliquez en dehors d'elle
+                        style={styles.modalContainer}
+                      >
+                        <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
+                          {/* Contenu de la modal */}
+                          <View style={styles.choixCommu}>
+                            <Text>Communauté : {selectedCommunity && selectedCommunity.name}</Text>
+                            <Text>Code d'accès : {selectedCommunity && selectedCommunity.accessCode}</Text>
+                            <Text>Description : {selectedCommunity && selectedCommunity.description}</Text>
+                          </View>
+                          <View style={styles.modalBtnContent}>
+                            {/* Bouton pour supprimer la communauté */}
+                            <TouchableOpacity
+                              style={styles.desabonnerButton}
+                              onPress={() => {
+                                handleDeleteCommunity(selectedCommunity._id);
+                                closeModal(); // Fermez la modal après avoir ajouté l'objet
+                              }}
+                            >
+                              <FontAwesome
+                                style={styles.ppIcon}
+                                name="user-times"
+                                size={20}
+                                color="#F8FCFB"
+                              />
+                              <Text style={styles.smsButtonText}>Se désabonner</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    </Modal>
+            
+                    {/*MODAL MES OBJETS*/}
+                    <Modal
+                      visible={isModalObjectVisible}
+                      animationType="slide"
+                      transparent={true}
+                    >
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPressOut={closeModal} // Ferme la modal lorsque vous cliquez en dehors d'elle
+                        style={styles.modalContainer}
+                      >
+                        <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
+                          {/* Contenu de la modal */}
+                          <View style={styles.infoObj}>
+                            <Text>Nom de l'objet : {selectedObject && selectedObject.name}</Text>
+                            <Text>Description : {selectedObject && selectedObject.description}</Text>
+                          </View>
+                          <View style={styles.modalBtnContent}>
+                            {/* Bouton pour supprimer l'objet */}
+                            <TouchableOpacity
+                              style={styles.desabonnerButton}
+                              onPress={() => {
+                                handleDeleteObject(selectedObject._id);
+                                closeModal(); // Fermez la modal après avoir supprimé l'objet
+                              }}
+                            >
+                              <FontAwesome
+                                style={styles.ppIcon}
+                                name="trash-o"
+                                size={20}
+                                color="#F8FCFB"
+                              />
+                              <Text style={styles.smsButtonText}>Supprimer</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    </Modal>
+            
+                  </SafeAreaView>
+                );
+              }
+            
+              // Si isCameraActive est true, affichez la caméra
+              return (
+                <Camera
+                  type={type}
+                  flashMode={flashMode}
+                  ref={cameraRef}
+                  style={styles.camera}
                 >
-
-
-                  <FontAwesome
-                    style={styles.ppIcon}
-                    name="plus-square-o"
-                    size={20}
-                    color="#F8FCFB"
-                  />
-                  <Text style={styles.smsButtonText}>Ajouter</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </Modal>
-
-
-        {/*MODAL MES COMMUNAUTES*/}
-        <Modal
-          visible={isModalCommunityVisible}
-          animationType="slide"
-          transparent={true}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPressOut={closeModal} // Ferme la modal lorsque vous cliquez en dehors d'elle
-            style={styles.modalContainer}
-          >
-            <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
-              {/* Contenu de la modal */}
-              <View style={styles.choixCommu}>
-                <Text>Communauté : {selectedCommunity && selectedCommunity.name}</Text>
-                <Text>Code d'accès : {selectedCommunity && selectedCommunity.accessCode}</Text>
-                <Text>Description : {selectedCommunity && selectedCommunity.description}</Text>
-              </View>
-              <View style={styles.modalBtnContent}>
-                {/* Bouton pour supprimer la communauté */}
-                <TouchableOpacity
-                  style={styles.desabonnerButton}
-                  onPress={() => {
-                    handleDeleteCommunity(selectedCommunity._id);
-                    closeModal(); // Fermez la modal après avoir ajouté l'objet
-                  }}
-                >
-                  <FontAwesome
-                    style={styles.ppIcon}
-                    name="user-times"
-                    size={20}
-                    color="#F8FCFB"
-                  />
-                  <Text style={styles.smsButtonText}>Se désabonner</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </Modal>
-
-        {/*MODAL MES OBJETS*/}
-        <Modal
-          visible={isModalObjectVisible}
-          animationType="slide"
-          transparent={true}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPressOut={closeModal} // Ferme la modal lorsque vous cliquez en dehors d'elle
-            style={styles.modalContainer}
-          >
-            <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
-              {/* Contenu de la modal */}
-              <View style={styles.infoObj}>
-                <Text>Nom de l'objet : {selectedObject && selectedObject.name}</Text>
-                <Text>Description : {selectedObject && selectedObject.description}</Text>
-              </View>
-              <View style={styles.modalBtnContent}>
-                {/* Bouton pour supprimer l'objet */}
-                <TouchableOpacity
-                  style={styles.desabonnerButton}
-                  onPress={() => {
-                    handleDeleteObject(selectedObject._id);
-                    closeModal(); // Fermez la modal après avoir supprimé l'objet
-                  }}
-                >
-                  <FontAwesome
-                    style={styles.ppIcon}
-                    name="trash-o"
-                    size={20}
-                    color="#F8FCFB"
-                  />
-                  <Text style={styles.smsButtonText}>Supprimer</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </Modal>
-
-      </SafeAreaView>
-    );
-  }
-
-  // Si isCameraActive est true, affichez la caméra
-  return (
-    <Camera
-      type={type}
-      flashMode={flashMode}
-      ref={cameraRef}
-      style={styles.camera}
-    >
-      {/* Contenu de la caméra */}
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity
-          onPress={() =>
-            setType(
-              type === CameraType.back ? CameraType.front : CameraType.back
-            )
-          }
-          style={styles.button}
-        >
-          <FontAwesome name="rotate-right" size={25} color="#ffffff" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() =>
-            setFlashMode(
-              flashMode === FlashMode.off ? FlashMode.torch : FlashMode.off
-            )
-          }
-          style={styles.button}
-        >
-          <FontAwesome
-            name="flash"
-            size={25}
-            color={flashMode === FlashMode.off ? "#ffffff" : "#e8be4b"}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => setCameraActive(false)}
-          style={styles.button}
-        >
-          <FontAwesome name="remove" size={25} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.snapContainer}>
-        <TouchableOpacity onPress={() => cameraRef && takePicture(pictureFromCamera)}>
-          <FontAwesome name="circle-thin" size={95} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-    </Camera>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    height: "100%",
-    backgroundColor: "#F8FCFB",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 10,
-    backgroundColor: "#198EA5",
-    height: "10%",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "white",
-  },
-  userIcon: {
-    margin: 10,
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "white",
-  },
-  pageContent: {
-    height: "90%",
-  },
-  avatarContent: {
-    height: "38%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  commuIcon: {
-    marginBottom: 20,
-  },
-  infoUser: {
-    fontSize: 20,
-  },
-  infoAddressUser: {
-    fontSize: 18,
-  },
-  photos: {
-    margin: 10,
-    width: 150,
-    height: 150,
-    borderRadius: 100,
-    borderWidth: 3,
-    borderColor: "#198EA5",
-  },
-  photoEdit: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginRight: 5,
-  },
-  pencilIcon: {
-    marginLeft: -34,
-  },
-  pencilIconAddress: {
-    marginLeft: 5,
-  },
-  menuContent: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    backgroundColor: "#F8FCFB",
-  },
-  menuItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#198EA5",
-  },
-  menuText: {
-    fontSize: 16,
-  },
-  subMenuContent: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#198EA5",
-  },
-  addButton: {
-    position: "absolute",
-    bottom: "0%",
-    alignSelf: "center",
-    backgroundColor: "#198EA5",
-    borderRadius: 50,
-    width: 70,
-    height: 70,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  addButtonText: {
-    marginLeft: 2,
-    marginTop: 2,
-    fontSize: 40,
-    color: "#F8FCFB",
-    fontWeight: "bold",
-  },
-  buttonText: {
-    fontSize: 20
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    backgroundColor: "#F8FCFB",
-    padding: 20,
-    borderRadius: 10,
-    marginLeft: 25,
-    marginRight: 25,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  modalInput: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 10,
-  },
-  modalInputAddress: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 10,
-    color: '#126171',
-    fontSize: 18,
-    borderColor: '#126171',
-    borderWidth: 1,
-    width: 250,
-    height: 40,
-    backgroundColor: '#EEFCFF',
-    borderRadius: 10,
-    paddingLeft: 10
-  },
-  modalLogoutContent: {
-    backgroundColor: "#F8FCFB",
-    padding: 20,
-    borderRadius: 10,
-    marginLeft: 25,
-    marginRight: 25,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  deconnecterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "70%",
-    backgroundColor: "#198EA5",
-    padding: 10,
-    borderRadius: 5,
-  },
-  inputObjet: {
-    height: 30,
-    width: 200,
-    borderWidth: 2,
-    borderColor: "#198EA5",
-    borderRadius: 10,
-    paddingLeft: "5%",
-    alignItems: "center",
-  },
-  imageObjet: {
-    fontSize: 60,
-    marginLeft: 58,
-  },
-  closeText: {
-    color: "#198EA5",
-    marginTop: 10,
-    textAlign: "center",
-  },
-  modalBtnContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-evenly",
-  },
-  modalBtnContent2: {
-    flexDirection: "row",
-    // alignItems: "center",
-    justifyContent: "space-between",
-  },
-  emailButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "40%",
-    backgroundColor: "#198EA5",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  emailButton1: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "40%",
-    backgroundColor: "#198EA5",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    marginHorizontal: 3
-  },
-  emailButton2: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "40%",
-    backgroundColor: "#F8FCFB",
-    borderColor: "#198EA5",
-    borderWidth: 2,
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    marginHorizontal: 3
-  },
-  emailButtonText: {
-    color: "#198EA5",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  emailButtonText2: {
-    color: "white",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  addObjectButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "40%",
-    backgroundColor: "#198EA5",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  smsButtonText: {
-    color: "white",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  ppIcon: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginRight: 10,
-  },
-  camera: {
-    flex: 1,
-  },
-  buttonsContainer: {
-    flex: 0.1,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    paddingTop: 20,
-    paddingLeft: 20,
-    paddingRight: 20,
-  },
-  button: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.2)",
-    borderRadius: 50,
-  },
-  snapContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "flex-end",
-    paddingBottom: 25,
-  },
-  desabonnerButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "70%",
-    backgroundColor: "#198EA5",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  objectItem: {
-    alignItems: 'center',
-    marginRight: 14
-  },
-});
+                  {/* Contenu de la caméra */}
+                  <View style={styles.buttonsContainer}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        setType(
+                          type === CameraType.back ? CameraType.front : CameraType.back
+                        )
+                      }
+                      style={styles.button}
+                    >
+                      <FontAwesome name="rotate-right" size={25} color="#ffffff" />
+                    </TouchableOpacity>
+            
+                    <TouchableOpacity
+                      onPress={() =>
+                        setFlashMode(
+                          flashMode === FlashMode.off ? FlashMode.torch : FlashMode.off
+                        )
+                      }
+                      style={styles.button}
+                    >
+                      <FontAwesome
+                        name="flash"
+                        size={25}
+                        color={flashMode === FlashMode.off ? "#ffffff" : "#e8be4b"}
+                      />
+                    </TouchableOpacity>
+            
+                    <TouchableOpacity
+                      onPress={() => setCameraActive(false)}
+                      style={styles.button}
+                    >
+                      <FontAwesome name="remove" size={25} color="#ffffff" />
+                    </TouchableOpacity>
+                  </View>
+            
+                  <View style={styles.snapContainer}>
+                    <TouchableOpacity onPress={() => cameraRef && takePicture(pictureFromCamera)}>
+                      <FontAwesome name="circle-thin" size={95} color="#ffffff" />
+                    </TouchableOpacity>
+                  </View>
+                </Camera>
+              );
+            }
+            
+            const styles = StyleSheet.create({
+              container: {
+                flex: 1,
+                marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+                height: "100%",
+                backgroundColor: "#F8FCFB",
+              },
+              header: {
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: 10,
+                backgroundColor: "#198EA5",
+                height: "10%",
+              },
+              title: {
+                fontSize: 20,
+                fontWeight: "bold",
+                color: "white",
+              },
+              userIcon: {
+                margin: 10,
+                fontSize: 20,
+                fontWeight: "bold",
+                color: "white",
+              },
+              pageContent: {
+                height: "90%",
+              },
+              avatarContent: {
+                height: "38%",
+                alignItems: "center",
+                justifyContent: "center",
+              },
+              commuIcon: {
+                marginBottom: 20,
+              },
+              infoUser: {
+                fontSize: 20,
+              },
+              infoAddressUser: {
+                fontSize: 18,
+              },
+              photos: {
+                margin: 10,
+                width: 150,
+                height: 150,
+                borderRadius: 100,
+                borderWidth: 3,
+                borderColor: "#198EA5",
+              },
+              photoEdit: {
+                flexDirection: 'row',
+                justifyContent: 'center',
+                marginRight: 5,
+              },
+              pencilIcon: {
+                marginLeft: -34,
+              },
+              pencilIconAddress: {
+                marginLeft: 5,
+              },
+              menuContent: {
+                paddingHorizontal: 20,
+                paddingTop: 10,
+                backgroundColor: "#F8FCFB",
+              },
+              menuItem: {
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingVertical: 10,
+                borderBottomWidth: 1,
+                borderBottomColor: "#198EA5",
+              },
+              menuText: {
+                fontSize: 16,
+              },
+              subMenuContent: {
+                paddingVertical: 10,
+                borderBottomWidth: 1,
+                borderBottomColor: "#198EA5",
+              },
+              addButton: {
+                position: "absolute",
+                bottom: "0%",
+                alignSelf: "center",
+                backgroundColor: "#198EA5",
+                borderRadius: 50,
+                width: 70,
+                height: 70,
+                justifyContent: "center",
+                alignItems: "center",
+              },
+              addButtonText: {
+                marginLeft: 2,
+                marginTop: 2,
+                fontSize: 40,
+                color: "#F8FCFB",
+                fontWeight: "bold",
+              },
+              buttonText: {
+                fontSize: 20
+              },
+              modalContainer: {
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+              },
+              modalContent: {
+                backgroundColor: "#F8FCFB",
+                padding: 20,
+                borderRadius: 10,
+                marginLeft: 25,
+                marginRight: 25,
+                alignItems: 'center',
+                justifyContent: 'center'
+              },
+              modalInput: {
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 10,
+              },
+              modalInputAddress: {
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 10,
+                color: '#126171',
+                fontSize: 18,
+                borderColor: '#126171',
+                borderWidth: 1,
+                width: 250,
+                height: 40,
+                backgroundColor: '#EEFCFF',
+                borderRadius: 10,
+                paddingLeft: 10
+              },
+              modalLogoutContent: {
+                backgroundColor: "#F8FCFB",
+                padding: 20,
+                borderRadius: 10,
+                marginLeft: 25,
+                marginRight: 25,
+                alignItems: 'center',
+                justifyContent: 'center'
+              },
+              deconnecterButton: {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "70%",
+                backgroundColor: "#198EA5",
+                padding: 10,
+                borderRadius: 5,
+              },
+              inputObjet: {
+                height: 30,
+                width: 200,
+                borderWidth: 2,
+                borderColor: "#198EA5",
+                borderRadius: 10,
+                paddingLeft: "5%",
+                alignItems: "center",
+              },
+              imageObjet: {
+                fontSize: 60,
+                marginLeft: 58,
+              },
+              closeText: {
+                color: "#198EA5",
+                marginTop: 10,
+                textAlign: "center",
+              },
+              modalBtnContent: {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-evenly",
+              },
+              modalBtnContent2: {
+                flexDirection: "row",
+                // alignItems: "center",
+                justifyContent: "space-between",
+              },
+              emailButton: {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "40%",
+                backgroundColor: "#198EA5",
+                padding: 10,
+                borderRadius: 5,
+                marginTop: 10,
+              },
+              emailButton1: {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "40%",
+                backgroundColor: "#198EA5",
+                padding: 10,
+                borderRadius: 5,
+                marginTop: 10,
+                marginHorizontal: 3
+              },
+              emailButton2: {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "40%",
+                backgroundColor: "#F8FCFB",
+                borderColor: "#198EA5",
+                borderWidth: 2,
+                padding: 10,
+                borderRadius: 5,
+                marginTop: 10,
+                marginHorizontal: 3
+              },
+              emailButtonText: {
+                color: "#198EA5",
+                textAlign: "center",
+                fontWeight: "bold",
+              },
+              emailButtonText2: {
+                color: "white",
+                textAlign: "center",
+                fontWeight: "bold",
+              },
+              addObjectButton: {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "40%",
+                backgroundColor: "#198EA5",
+                padding: 10,
+                borderRadius: 5,
+                marginTop: 10,
+              },
+              smsButtonText: {
+                color: "white",
+                textAlign: "center",
+                fontWeight: "bold",
+              },
+              ppIcon: {
+                fontSize: 20,
+                fontWeight: "bold",
+                marginRight: 10,
+              },
+              camera: {
+                flex: 1,
+              },
+              buttonsContainer: {
+                flex: 0.1,
+                flexDirection: "row",
+                alignItems: "flex-end",
+                justifyContent: "space-between",
+                paddingTop: 20,
+                paddingLeft: 20,
+                paddingRight: 20,
+              },
+              button: {
+                width: 44,
+                height: 44,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "rgba(0, 0, 0, 0.2)",
+                borderRadius: 50,
+              },
+              snapContainer: {
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "flex-end",
+                paddingBottom: 25,
+              },
+              desabonnerButton: {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "70%",
+                backgroundColor: "#198EA5",
+                padding: 10,
+                borderRadius: 5,
+                marginTop: 10,
+              },
+              objectItem: {
+                alignItems: 'center',
+                marginRight: 14
+              },
+                                            empruntItem: {
+                                              // borderTopColor: "#198EA5",
+                                              borderBottomColor: "#198EA5",
+                                              // borderTopWidth: 0.25,
+                                              borderBottomWidth: 0.25
+                                            },
+                                            empruntText: {
+                                              textAlign: "center",
+                                            }
+            });
+            
