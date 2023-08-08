@@ -92,40 +92,30 @@ export default function ChatScreen({ navigation }) {
     ));
   };
 
-  // const handleRenderObject = async () => {
-  //   try {
-  //     const borrowerUser = await User.findOne({ token: token  });
-  //     const object = await Object.findById();
-  //     const transaction = await Transaction.findById();
-
-  //     if (!borrowerUser) {
-  //       console.log("Utilisateur emprunteur non trouvé");
-  //       return;
-  //     }
-
-  //     if (!object) {
-  //       console.log("Objet emprunté non trouvé");
-  //       return;
-  //     }
-
-  //     if (!transaction) {
-  //       console.log("Transaction non trouvée");
-  //       return;
-  //     }
-
-  //     transaction.isFinished = true;
-  //     await transaction.save();
-
-  //     object.isAvailable = false;
-  //     await object.save();
-
-  //     console.log("Objet rendu avec succès !! :D");
-  //   } catch (error) {
-  //     console.error("Erreur retour objet:", error.message);
-  //   }
-  // };
-
-  // handleRenderObject();
+  const handleRenderObject = async () => {
+    try {
+      if (!borrowerUser || !object || !lenderUser) {
+        console.log('Utilisateur, preteur ou objet non trouvé');
+        return;
+      }
+  
+      const response = await fetch(`${BACKEND_URL}/transactions/return/${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objectId, transactionId })
+      });
+  
+      const transaction = await response.json();
+      if (transaction.result) {
+        console.log("Objet rendu avec succès !! :D", transaction);
+      } else {
+        console.log('Erreur', transaction.error);
+      }
+    } catch (error) {
+      console.error('Erreur lors du retour objet', error.message);
+    }
+  };
+  
 
   // État et fonction pour la saisie de message
   const [message, setMessage] = useState("");
@@ -261,6 +251,7 @@ export default function ChatScreen({ navigation }) {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
+                handleRenderObject();
                 closeModal();
                 navigation.navigate("Prêt");
               }}
