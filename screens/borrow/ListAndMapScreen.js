@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import {
-  Platform,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-  KeyboardAvoidingView,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  ActivityIndicator,
+	Platform,
+	SafeAreaView,
+	StatusBar,
+	StyleSheet,
+	Text,
+	View,
+	KeyboardAvoidingView,
+	TextInput,
+	TouchableOpacity,
+	ScrollView,
+	Modal,
+	ActivityIndicator,
+	Dimensions,
   Image
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -20,142 +21,186 @@ import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { BACKEND_URL } from "../../Constants";
 import { useSelector } from "react-redux";
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 
 
 
 // Composant principal
 export default function ListAndMapScreen({ route, navigation }) {
   // États pour gérer l'onglet sélectionné, la localisation, l'élément sélectionné et la modal
-  const [selectedTab, setSelectedTab] = useState("Liste");
-  const [location, setLocation] = useState(null);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedItemInfo, setSelectedItemInfo] = useState(null);
-  const [mapObjects, setMapObjects] = useState([]);
-  const [data, setData] = useState([]);
+	// États pour gérer l'onglet sélectionné, la localisation, l'élément sélectionné et la modal
+	const [selectedTab, setSelectedTab] = useState("Liste");
+	const [location, setLocation] = useState(null);
+	const [selectedItem, setSelectedItem] = useState(null);
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [selectedItemInfo, setSelectedItemInfo] = useState(null);
+	const [mapObjects, setMapObjects] = useState([]);
+	const [isBorrowModalVisible, setIsBorrowModalVisible] = useState(false); // State to manage modal visibility
+	const [data, setData] = useState([]);
   const [isModalLogoutVisible, setModalLogoutVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+	const [searchLoading, setSearchLoading] = useState(false);
+	const [searchResults, setSearchResults] = useState([]);
+	const [searchTerm, setSearchTerm] = useState("");
 
+	const [modalFilterVisible, setModalFilterVisible] = useState(false);
+	const [userCommunities, setUserCommunities] = useState([]);
 
-  const token = useSelector((state) => state.users.token);
+	const token = useSelector((state) => state.users.token);
 
-  // Effet pour demander et surveiller les autorisations de localisation
-  useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+	// Effet pour demander et surveiller les autorisations de localisation
+	useEffect(() => {
+		(async () => {
+			const { status } = await Location.requestForegroundPermissionsAsync();
 
-      if (status === "granted") {
-        // Localisation de la position
-        Location.watchPositionAsync({ distanceInterval: 10 }, (location) => {
-          setLocation(location);
-        });
-      }
-    })();
-  }, []);
+			if (status === "granted") {
+				// Localisation de la position
+				Location.watchPositionAsync({ distanceInterval: 10 }, (location) => {
+					setLocation(location);
+				});
+			}
+		})();
 
-  useEffect(() => {
-    if (!searchTerm || searchTerm === "") {
-      setSearchResults(null);
-      fetchFeed();
-    }
-  }, [searchTerm]);
+		// Récupération des communautés de User
+		(async () => {
+			const response = await fetch(`${BACKEND_URL}/communities/${token}`);
+			let userData = await response.json();
+			userData = userData.communities.map(commu => { return { ...commu, selected: true }; });
+			setUserCommunities(userData);
+		})();
+	}, []);
 
-  // Gère la sélection d'un élément de la liste
-  const handleItemPress = async (item) => {
-    setSelectedItem(item === selectedItem ? null : item);
-    setSelectedItemInfo(item === selectedItemInfo ? null : item);
-    console.log("selectedItemInfo 1", selectedItemInfo)
-    setIsModalVisible(true);
+	useEffect(() => {
+		if (!searchTerm || searchTerm === "") {
+			setSearchResults(null);
+			fetchFeed();
+		}
+	}, [searchTerm]);
 
-    // Récupère les objets pour la carte
-    const mapResults = await fetchFeed(item);
-    setMapObjects(mapResults);
-  };
+	// Gère la sélection d'un élément de la liste
+	const handleItemPress = async (item) => {
+		setSelectedItem(item === selectedItem ? null : item);
+		setSelectedItemInfo(item === selectedItemInfo ? null : item);
+		console.log("selectedItemInfo 1", selectedItemInfo)
+		setIsModalVisible(true);
 
-  const fetchFeed = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/communities/feed/${token}`);
+		// Récupère les objets pour la carte
+		const mapResults = await fetchFeed(item);
+		setMapObjects(mapResults);
+	};
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      const mapMarkersData = data.items.map((item) => ({
-        title: item.name,
-        latitude: item.owner.address.latitude,
-        longitude: item.owner.address.longitude,
-        distance: item.distance,
-      }));
-      setMapObjects(mapMarkersData);
-      setData(data.items);
-    } catch (error) {
-      console.error("Une erreur s'est produite:", error);
-    }
-  };
+	const fetchFeed = async () => {
+		try {
+			const response = await fetch(`${BACKEND_URL}/communities/feed/${token}`);
 
-  const fetchSearchResults = async (item) => {
-    try {
-      setSearchLoading(true);
+			if (!response.ok) {
+				throw new Error("Network response was not ok");
+			}
+			const data = await response.json();
+			const mapMarkersData = data.items.map((item) => ({
+				title: item.name,
+				latitude: item.owner.address.latitude,
+				longitude: item.owner.address.longitude,
+				distance: item.distance,
+			}));
+			setMapObjects(mapMarkersData);
+			setData(data.items);
+		} catch (error) {
+			console.error("Une erreur s'est produite:", error);
+		}
+	};
 
-      const response = await fetch(`${BACKEND_URL}/search`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token: token,
-          name: item,
-        }),
-      });
+	const fetchSearchResults = async (item) => {
+		try {
+			setSearchLoading(true);
 
-      const data = await response.json();
+			const response = await fetch(`${BACKEND_URL}/search`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					token: token,
+					name: item,
+					communitiesId: userCommunities.filter(commu => commu.selected).map(commu => commu._id)
+				}),
+			});
 
-      if (data.result) {
-        const mapMarkersData = data.searchresult.map((item) => ({
-          title: item.name,
-          latitude: item.owner.address.latitude,
-          longitude: item.owner.address.longitude,
-          distance: item.distance,
-        }));
+			const data = await response.json();
 
-        setMapObjects(mapMarkersData);
-        setSearchResults(data.searchresult);
-      } else {
-        console.log("Erreur de recherche :", data.error);
-        setSearchResults([]);
-      }
-    } catch (error) {
-      console.log("Erreur :", error.message);
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
-  };
+			if (data.result) {
+				const mapMarkersData = data.searchresult.map((item) => ({
+					title: item.name,
+					latitude: item.owner.address.latitude,
+					longitude: item.owner.address.longitude,
+					distance: item.distance,
+				}));
 
-  /**
-   * Fonction pour emprunter un objet
-   */
-  const handleBorrow = async () => {
-    const response = await fetch(`${BACKEND_URL}/transactions/borrow/${token}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
+				setMapObjects(mapMarkersData);
+				setSearchResults(data.searchresult);
+			} else {
+				console.log("Erreur de recherche :", data.error);
+				setSearchResults([]);
+			}
+		} catch (error) {
+			console.log("Erreur :", error.message);
+			setSearchResults([]);
+		} finally {
+			setSearchLoading(false);
+		}
+	};
+
+	/**
+	 * Fonction pour emprunter un objet
+	 */
+	const handleBorrow = async () => {
+		const response = await fetch(`${BACKEND_URL}/transactions/borrow/${token}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ _id: selectedItemInfo._id, endDate: selectedDate })
+		});
+
+		const data = await response.json();
+
+		if (response.ok) {
+			fetchFeed();
+		} else {
+			console.log(data.error);
+		}
+	};
+
+  const handleBorrowButtonPress = () => {
+		setIsBorrowModalVisible(true);
+	};
+
+	const filterSelectedCommu = (indice) => {
+		const filtered = userCommunities.map((commu, i) => {
+			if (i === indice) {
+				let obj = { ...commu };
+				obj['selected'] = !commu['selected'];
+				return obj;
+			}
+			else { return commu; }
+		});
+
+		setUserCommunities(filtered);
+	};
+
+  const showAndroidDatePicker = () => {
+    DateTimePickerAndroid.open({
+      value: selectedDate,
+      onChange: (event, date) => {
+        if (date !== undefined) {
+          setSelectedDate(date);
+        }
       },
-      body: JSON.stringify({ _id: selectedItemInfo._id, endDate: selectedDate })
+      mode: "date",
+      format: "DD-MM-YYYY",
+      minimumDate: new Date()
     });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      fetchFeed();
-    } else {
-      console.log(data.error);
-    }
   };
 
   // SearchRes sera défini qu'après l'initialisation du composant
@@ -190,6 +235,7 @@ export default function ListAndMapScreen({ route, navigation }) {
           {item.distance} km
         </Text>
         )}
+        <Text>Communautés : {item.availableIn.map(e => e.nameCommu).join(', ')}</Text>
         </View>
       </View>
     </View>
@@ -227,6 +273,7 @@ export default function ListAndMapScreen({ route, navigation }) {
           {item.distance} km
         </Text>
         )}
+        <Text>Communautés : {item.availableIn.map(e => e.nameCommu).join(', ')}</Text>
         </View>
       </View>
     </View>
@@ -313,7 +360,7 @@ export default function ListAndMapScreen({ route, navigation }) {
                 />
               </View>
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.8}>
+            <TouchableOpacity activeOpacity={0.8} onPress={() => setModalFilterVisible(true)}>
               <View style={styles.filter}>
                 <FontAwesome
                   name="sliders"
@@ -326,103 +373,103 @@ export default function ListAndMapScreen({ route, navigation }) {
             </View>
           </View>
 
-        {/* Barre de navigation entre Liste et Carte */}
-        <View style={styles.rowMenu}>
-          <TouchableOpacity onPress={() => setSelectedTab("Liste")}>
-            <View
-              style={[
-                styles.iconTextContainer,
-                selectedTab === "Liste" && styles.selectedTab,
-              ]}
-            >
-              <FontAwesome
-                style={styles.listIcon}
-                name="list"
-                size={20}
-                color={selectedTab === "Liste" ? "#198EA5" : "#198EA5"}
-              />
-              <Text
-                style={[
-                  styles.iconText,
-                  selectedTab === "Liste" && styles.selectedTabText,
-                ]}
-              >
-                Liste
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setSelectedTab("Carte")}>
-            <View
-              style={[
-                styles.iconTextContainer,
-                selectedTab === "Carte" && styles.selectedTab,
-              ]}
-            >
-              <FontAwesome
-                style={styles.mapIcon}
-                name="map"
-                size={20}
-                color={selectedTab === "Carte" ? "#198EA5" : "#198EA5"}
-              />
-              <Text
-                style={[
-                  styles.iconText,
-                  selectedTab === "Carte" && styles.selectedTabText,
-                ]}
-              >
-                Carte
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+				{/* Barre de navigation entre Liste et Carte */}
+				<View style={styles.rowMenu}>
+					<TouchableOpacity onPress={() => setSelectedTab("Liste")}>
+						<View
+							style={[
+								styles.iconTextContainer,
+								selectedTab === "Liste" && styles.selectedTab,
+							]}
+						>
+							<FontAwesome
+								style={styles.listIcon}
+								name="list"
+								size={20}
+								color={selectedTab === "Liste" ? "#198EA5" : "#198EA5"}
+							/>
+							<Text
+								style={[
+									styles.iconText,
+									selectedTab === "Liste" && styles.selectedTabText,
+								]}
+							>
+								Liste
+							</Text>
+						</View>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={() => setSelectedTab("Carte")}>
+						<View
+							style={[
+								styles.iconTextContainer,
+								selectedTab === "Carte" && styles.selectedTab,
+							]}
+						>
+							<FontAwesome
+								style={styles.mapIcon}
+								name="map"
+								size={20}
+								color={selectedTab === "Carte" ? "#198EA5" : "#198EA5"}
+							/>
+							<Text
+								style={[
+									styles.iconText,
+									selectedTab === "Carte" && styles.selectedTabText,
+								]}
+							>
+								Carte
+							</Text>
+						</View>
+					</TouchableOpacity>
+				</View>
 
-        {/* Contenu principal */}
-        <View style={styles.contentList}>
-          {selectedTab === "Liste" ? (
-            // Liste des éléments
-            <ScrollView>
-              {/* Loading spinner pendant le chargement de la recherche */}
-              <ActivityIndicator animating={searchLoading} size="large" color="#198EA5" />
+				{/* Contenu principal */}
+				<View style={styles.contentList}>
+					{selectedTab === "Liste" ? (
+						// Liste des éléments
+						<ScrollView>
+							{/* Loading spinner pendant le chargement de la recherche */}
+							<ActivityIndicator animating={searchLoading} size="large" color="#198EA5" />
 
-              {/* Affichage du résultat de la recherche */}
-              {selectedTab === "Liste" && searchRes ? searchRes : undefined}
+							{/* Affichage du résultat de la recherche */}
+							{selectedTab === "Liste" && searchRes ? searchRes : undefined}
 
-              {/* Affichge du feed de base */}
-              {selectedTab === "Liste" && !searchRes ? feedRes : undefined}
-            </ScrollView>
-          ) : (
-            // Carte avec localisation
-            <View style={styles.mapContainer}>
-              {selectedTab === "Carte" && location && (
-                <MapView
-                  style={styles.map}
-                  initialRegion={{
-                    latitude: location?.coords?.latitude || 37.78825,
-                    longitude: location?.coords?.longitude || -122.4324,
-                    latitudeDelta: 0.8,
-                    longitudeDelta: 0.8,
-                  }}
-                >
-                  {mapObjects.map((mapObj, i) => {
-                    // Corrected variable name
-                    console.log("Marker:", mapObj);
-                    return (
-                      <Marker
-                        key={i}
-                        coordinate={{
-                          latitude: mapObj.latitude,
-                          longitude: mapObj.longitude,
-                        }}
-                        title={mapObj.title}
-                        description={`Distance: ${mapObj.distance} km`}
-                      />
-                    );
-                  })}
-                </MapView>
-              )}
-            </View>
-          )}
-        </View>
+							{/* Affichge du feed de base */}
+							{selectedTab === "Liste" && !searchRes ? feedRes : undefined}
+						</ScrollView>
+					) : (
+						// Carte avec localisation
+						<View style={styles.mapContainer}>
+							{selectedTab === "Carte" && location && (
+								<MapView
+									style={styles.map}
+									initialRegion={{
+										latitude: location?.coords?.latitude || 37.78825,
+										longitude: location?.coords?.longitude || -122.4324,
+										latitudeDelta: 0.8,
+										longitudeDelta: 0.8,
+									}}
+								>
+									{mapObjects.map((mapObj, i) => {
+										// Corrected variable name
+										console.log("Marker:", mapObj);
+										return (
+											<Marker
+												key={i}
+												coordinate={{
+													latitude: mapObj.latitude,
+													longitude: mapObj.longitude,
+												}}
+												title={mapObj.title}
+												description={`Distance: ${mapObj.distance} km`}
+											/>
+										);
+									})}
+								</MapView>
+							)}
+						</View>
+					)}
+				</View>
       </View>
 
         {/* Modal emprunt */}
@@ -460,18 +507,25 @@ export default function ListAndMapScreen({ route, navigation }) {
                   <Text style={styles.modalJemprunteTextTitle}>Jusqu'au :</Text>
                 </View>
                 <View style={styles.datePickerContainer}>
-                  <DateTimePicker
-                    style={styles.datePicker}
-                    value={selectedDate}
-                    mode="date"
-                    format="DD-MM-YYYY"
-                    minimumDate={new Date()}
-                    onChange={(event, date) => {
-                      if (date !== undefined) {
-                        setSelectedDate(date);
-                      }
-                    }}
-                  />
+                  {Platform.OS === 'ios' && (
+                    <DateTimePicker
+                      value={selectedDate}
+                      mode="date"
+                      format="DD-MM-YYYY"
+                      minimumDate={new Date()}
+                      onChange={(event, date) => {
+                        if (date !== undefined) {
+                          setSelectedDate(date);
+                        }
+                      }}
+                    />
+                  )}
+
+                  {Platform.OS === 'android' && (
+                    <TouchableOpacity style={styles.datePicker} onPress={showAndroidDatePicker}>
+                      <Text style={{ color: '#198EA5' }}>{selectedDate.toLocaleDateString()}</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <View>
                   <TouchableOpacity
@@ -493,8 +547,10 @@ export default function ListAndMapScreen({ route, navigation }) {
                 </View>
               </View>
             )}
+          </TouchableOpacity>
+        </Modal>
 
-                   {/*MODAL LOGOUT*/}
+        {/*MODAL LOGOUT*/}
         <Modal
           visible={isModalLogoutVisible}
           animationType="slide"
@@ -526,8 +582,37 @@ export default function ListAndMapScreen({ route, navigation }) {
           </TouchableOpacity>
         </Modal>
 
-        </TouchableOpacity>
-        </Modal>
+        {/* Modal de filtre sur les communautés */}
+				<Modal
+					animationType="slide"
+					transparent={true}
+					visible={modalFilterVisible}
+					onRequestClose={() => setModalFilterVisible(false)}>
+
+					<View style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)', justifyContent: 'center', alignItems: 'center' }}>
+						<View style={{ alignItems: 'flex-start', backgroundColor: 'white', marginVertical: Dimensions.get('screen').height / 3.75, borderRadius: 20, paddingHorizontal: 20, marginHorizontal: Dimensions.get('screen').width / 25, paddingVertical: 15 }}>
+							<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', columnGap: 15 }}>
+								<Text style={{ fontWeight: 'bold', fontSize: 13, width: '75%' }}>Dans quelle(s) communauté(s) voulez-vous chercher ?</Text>
+
+                <TouchableOpacity onPress={() => setModalFilterVisible(false)} style={{ backgroundColor: '#198EA5', borderRadius: 50, justifyContent: 'center', alignItems: 'center', height: 20, width: 20 }}>
+								  <FontAwesome name='close' size={15} color='white' />
+                </TouchableOpacity>
+							</View>
+							<ScrollView style={{  width: '100%' }} contentContainerStyle={{ flex: 1, justifyContent: 'center', rowGap: 25 }}>
+								{
+									userCommunities && userCommunities.map((commu, i) => {
+										return (
+											<TouchableOpacity key={i} onPress={() => filterSelectedCommu(i)} style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', columnGap: 20 }}>
+												<View style={{ backgroundColor: commu.selected ? '#CE8D2C' : undefined, borderColor: '#CE8D2C', borderWidth: 1, width: 10, height: 10, borderRadius: 2 }} />
+												<Text>{commu.name}</Text>
+											</TouchableOpacity>
+										)
+									})
+								}
+							</ScrollView>
+						</View>
+					</View>
+				</Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -545,13 +630,23 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 10,
-    backgroundColor: "#198EA5",
     height: "10%",
+    backgroundColor: "#198EA5",
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "600",
     color: "white",
+  },
+  titleh: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#353639",
+  },
+  titleh1: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#198EA5",
   },
   userIcon: {
     margin: 10,
@@ -562,17 +657,12 @@ const styles = StyleSheet.create({
   pageContent: {
     height: "90%",
   },
-  titleh: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#353639",
-  },
   contentTop: {
     width: "100%",
     height: "10%",
     backgroundColor: "#F8FCFB",
+    justifyContent: "center",
     alignItems: "center",
-    justifyContent: 'center',
   },
   rowSearch: {
     flexDirection: "row",
@@ -584,6 +674,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
+    justifyContent: "flex-start",
     alignItems: "center",
     width: 240,
     height: 50,
@@ -603,6 +694,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  contentList: {
+    width: "100%",
+    height: "60%",
+    backgroundColor: "#F8FCFB",
+    borderTopWidth: 1,
+  },
+  rowMenu: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    width: "100%",
+    height: "10%",
+    backgroundColor: "#F8FCFB",
+  },
   filter: {
     borderRadius: 25,
     width: 50,
@@ -613,37 +718,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#198EA5",
     margin: 5,
   },
-  iconFilter: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 1,
-  },
-  rowMenu: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    alignItems: "center",
-    width: "100%",
-    height: "10%",
-    backgroundColor: "#F8FCFB",
-  },
   iconTextContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
-  contentList: {
-    width: "100%",
-    height: "65%",
-    backgroundColor: "#F8FCFB",
-  },
-  listItem: {
-    justifyContent: 'center',
-    borderTopWidth: 1,
-    borderTopColor: "#198EA5",
-    height: 120,
-  },
   iconText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: "#198EA5",
     marginLeft: 3,
   },
@@ -657,46 +738,36 @@ const styles = StyleSheet.create({
   selectedTabText: {
     color: "#198EA5",
   },
+  contentList: {
+    width: "100%",
+    height: "65%",
+    backgroundColor: "#F8FCFB",
+  },
+  listItem: {
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderTopColor: "#198EA5",
+    height: 120,
+  },
+  iconFilter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 1,
+  },
   listIcon: {
     marginRight: 10,
   },
   mapIcon: {
     marginRight: 10,
   },
+  itemTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
+    marginLeft: 10,
+  },
   selectedItem: {
     backgroundColor: "#EEFCFF",
-  },
-  photos: {
-    width: 100,
-    height: 100,
-    borderWidth: 3,
-    borderColor: "#198EA5",
-  },
-  allObjectContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  photoEdit: {
-    alignSelf: 'flex-start',
-    marginLeft: 20,
-  },
-  descriptionObjectList: {
-    justifyContent: 'space-evenly',
-    marginLeft: 20,
-    height: 100
-  },
-  itemTitleObj: {
-    color: "#198EA5",
-    fontWeight: "bold",
-    fontSize: 19,
-  },
-  username: {
-    fontWeight: "bold",
-    color: "#353639",
-  },
-  dispoText: {
-    color: "#353639",
-    fontWeight: "bold",
   },
   modalContainer: {
     flex: 1,
@@ -716,7 +787,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#198EA5",
     borderBottomWidth: 2,
   },
-  modalJemprunteTextTitle: {
+    modalJemprunteTextTitle: {
     fontWeight: "bold",
   },
   objectDescriptionModal: {
@@ -735,27 +806,29 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 5,
   },
-  modalTitleText: {
-    fontSize: 15,
-    marginLeft: 5,
+  modalCloseButton: {
+    marginTop: 20,
+    alignSelf: "flex-end",
   },
-  modalJemprunteTitle: {
-    marginBottom: 10,
+  modalCloseButtonText: {
+    color: "#198EA5",
+    fontWeight: "bold",
   },
-  datePickerContainer: {
+  borrowButton: {
+    backgroundColor: "#198EA5",
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 10,
+  },
+    datePickerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
   },
   emprunterButton: {
-    flexDirection: 'row',
     backgroundColor: "#198EA5",
-    width: 250,
-    borderRadius: 5,
+    borderRadius: 10,
     padding: 10,
-    marginTop: 10,
-    alignItems: 'center',
-    justifyContent: 'center'
   },
   emprunterButtonText: {
     color: "white",
@@ -790,6 +863,14 @@ const styles = StyleSheet.create({
   mapContainer: {
     flex: 1,
   },
+  borrowTextInput: {
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    height: 100,
+  },
   modalButtonContainer: {
     flexDirection: "row",
     justifyContent: "flex-end",
@@ -813,4 +894,42 @@ const styles = StyleSheet.create({
   iconX: {
     textAlign: "center",
   },
+  photos: {
+    width: 100,
+    height: 100,
+    borderWidth: 3,
+    borderColor: "#198EA5",
+  },
+  allObjectContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  photoEdit: {
+    alignSelf: 'flex-start',
+    marginLeft: 20,
+  },
+  descriptionObjectList: {
+    justifyContent: 'space-evenly',
+    marginLeft: 20,
+    height: 100
+  },
+  itemTitleObj: {
+    color: "#198EA5",
+    fontWeight: "bold",
+    fontSize: 19,
+  },
+  username: {
+    fontWeight: "bold",
+    color: "#353639",
+  },
+  dispoText: {
+    color: "#353639",
+    fontWeight: "bold",
+  },
+  datePicker: {
+    marginVertical: 10,
+    padding: 5,
+    backgroundColor: '#ddd',
+    borderRadius: 10
+  }
 });
