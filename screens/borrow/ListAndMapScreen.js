@@ -23,11 +23,7 @@ import { BACKEND_URL } from "../../Constants";
 import { useSelector } from "react-redux";
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 
-
-
-// Composant principal
 export default function ListAndMapScreen({ route, navigation }) {
-  // États pour gérer l'onglet sélectionné, la localisation, l'élément sélectionné et la modal
 	// États pour gérer l'onglet sélectionné, la localisation, l'élément sélectionné et la modal
 	const [selectedTab, setSelectedTab] = useState("Liste");
 	const [location, setLocation] = useState(null);
@@ -35,7 +31,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [selectedItemInfo, setSelectedItemInfo] = useState(null);
 	const [mapObjects, setMapObjects] = useState([]);
-	const [isBorrowModalVisible, setIsBorrowModalVisible] = useState(false); // State to manage modal visibility
+	// const [isBorrowModalVisible, setIsBorrowModalVisible] = useState(false); // State to manage modal visibility
 	const [data, setData] = useState([]);
   const [isModalLogoutVisible, setModalLogoutVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -82,12 +78,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 	const handleItemPress = async (item) => {
 		setSelectedItem(item === selectedItem ? null : item);
 		setSelectedItemInfo(item === selectedItemInfo ? null : item);
-		console.log("selectedItemInfo 1", selectedItemInfo)
 		setIsModalVisible(true);
-
-		// Récupère les objets pour la carte
-		const mapResults = await fetchFeed(item);
-		setMapObjects(mapResults);
 	};
 
 	const fetchFeed = async () => {
@@ -172,10 +163,6 @@ export default function ListAndMapScreen({ route, navigation }) {
 		}
 	};
 
-  const handleBorrowButtonPress = () => {
-		setIsBorrowModalVisible(true);
-	};
-
 	const filterSelectedCommu = (indice) => {
 		const filtered = userCommunities.map((commu, i) => {
 			if (i === indice) {
@@ -235,7 +222,7 @@ export default function ListAndMapScreen({ route, navigation }) {
           {item.distance} km
         </Text>
         )}
-        <Text>Communautés : {item.availableIn.map(e => e.nameCommu).join(', ')}</Text>
+        <Text>Communauté(s) : {item.availableIn.map(e => e.nameCommu).join(', ')}</Text>
         </View>
       </View>
     </View>
@@ -292,13 +279,11 @@ export default function ListAndMapScreen({ route, navigation }) {
     setEmail("");
     setUsername("");
     setPhoto("");
-    setShowCommunities(false);
     setShowPrets(false);
     setShowEmprunts(false);
     setShowObjets(false);
     setUserObjects([]);
     setName("");
-    setCommunities(null);
     setDescription("");
     dispatch(logout());
   
@@ -345,10 +330,7 @@ export default function ListAndMapScreen({ route, navigation }) {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
-                if (searchTerm) {
-                  console.log("searchTerm:", searchTerm)
-                  fetchSearchResults(searchTerm);
-                }
+                if (searchTerm) { fetchSearchResults(searchTerm); }
               }}
             >
               <View style={styles.filter}>
@@ -621,7 +603,6 @@ export default function ListAndMapScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
     height: "100%",
     backgroundColor: "#F8FCFB",
   },
