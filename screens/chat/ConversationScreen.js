@@ -1,12 +1,16 @@
-import React, { useState } from "react";
-import { Platform, SafeAreaView, StatusBar, TouchableOpacity, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from "react";
+import { Platform, SafeAreaView, StatusBar, TouchableOpacity, Image, ScrollView, StyleSheet, Text, View, TouchableNativeFeedback } from 'react-native';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from "@react-navigation/native";
+import { useSelector } from "react-redux";
+import { BACKEND_URL } from "../../Constants";
 
 export default function ConversationScreen() {
   const [selectedTab, setSelectedTab] = useState("Prêt");
   const navigation = useNavigation();
+  const [prets, setPret] = useState(null);
+  const [emprunts,setEmprunt]= useState(null);
 
   const dataPrets = [
     { id: "1", title: "Laurent ", description: "Tu veux mon marteau ? " },
@@ -20,8 +24,68 @@ export default function ConversationScreen() {
     { id: "3", title: "Je sais pas ", description: "Description de la tasse" },
   ];
   const handleChatRoomPress = (item) => {
+    
     navigation.navigate("ChatRoom", { itemId: item.id, itemTitle: item.title });
   };
+
+   // On recupère le token
+   const token = useSelector((state) => state.users.token);
+  
+  useEffect(() => {
+    if (!token) {
+      console.log("error, user not found");
+    } else {
+      getTransactionsLender();
+      getTransactionsBorrower();
+    }
+  }, [token]); 
+
+
+  const getTransactionsLender = async () => {
+    try {
+      if (!token) {
+        console.log('Utilisateur preteur non trouvé');
+        return;
+      }
+  
+      const response = await fetch(`${BACKEND_URL}/transactions/lender/${token}`)
+  
+      const transaction = await response.json();
+
+      if (transaction.result) {
+        console.log("Affichage des transactions prêts", transaction.rooms);
+        setPret(transaction.rooms)
+      } else {
+        console.log('Erreur', transaction.error);
+      }
+    } catch (error) {
+      console.error('Erreur lors de affichage des prêts', error.message);
+    }
+  };
+
+
+  const getTransactionsBorrower = async () => {
+    try {
+      if (!token) {
+        console.log('Utilisateur preteur non trouvé');
+        return;
+      }
+  
+      const response = await fetch(`${BACKEND_URL}/transactions/borrower/${token}`)
+  
+      const transaction = await response.json();
+      
+      if (transaction.result) {
+        console.log("Affichage des transactions emprunts", transaction.rooms);
+        setEmprunt(transaction.rooms);
+      } else {
+        console.log('Erreur', transaction.error);
+      }
+    } catch (error) {
+      console.error('Erreur lors de affichage des emprunts', error.message);
+    }
+  };
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -92,52 +156,41 @@ export default function ConversationScreen() {
       {/* Liste des Prêts ou Emprunts */}
       <ScrollView>
   {selectedTab === "Prêt"
-    ? dataPrets.map((item) => (
+    ? prets && prets.map((room) => (
         [
           <TouchableOpacity
-            key={item.id}
+            key={room._id}
             style={styles.itemContainer}
-            onPress={() => handleChatRoomPress(item)}
+            onPress={() => handleChatRoomPress(room)}
           >
-            <FontAwesome
-              name="photo"
-              size={24}
-              color="#198EA5"
-              style={styles.photoIcon}
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.listTitle}>{item.title}</Text>
-              {item.description && (
-                <Text style={styles.itemDescription}>{item.description}</Text>
-              )}
-            </View>
+            {/* ... */}
+            {
+              room.object.photo ?
+                <Image source={{ uri: room.object.photo }} style={{ width: 100, height: 100 }} resizeMode="contain" />
+                  :
+                <FontAwesome name='image' size={100} />
+            }
+            <Text style={styles.listTitle}>{room.borrowerUser.username}</Text>
+            <Text style={styles.object}>{room.object.name}</Text>
+            {/* ... */}
           </TouchableOpacity>,
           // Separator
-          <View style={styles.separator} key={`separator-${item.id}`} />,
+          <View style={styles.separator} key={`separator-${room._id}`} />,
         ]
       ))
-    : dataEmprunts.map((item) => (
+    : emprunts && emprunts.map((room) => (
         [
           <TouchableOpacity
-            key={item.id}
+            key={room._id}
             style={styles.itemContainer}
-            onPress={() => handleChatRoomPress(item)}
+            onPress={() => handleChatRoomPress(room)}
           >
-            <FontAwesome
-              name="photo"
-              size={24}
-              color="#198EA5"
-              style={styles.photoIcon}
-            />
-            <View style={styles.textContainer}>
-            <Text style={styles.listTitle}>{item.title}</Text>
-              {item.description && (
-                <Text style={styles.itemDescription}>{item.description}</Text>
-              )}
-            </View>
+            {/* ... */}
+            <Text style={styles.listTitle}>{room.lenderUser.username}</Text>
+            {/* ... */}
           </TouchableOpacity>,
           // Separator
-          <View style={styles.separator} key={`separator-${item.id}`} />,
+          <View style={styles.separator} key={`separator-${room._id}`} />,
         ]
       ))}
 </ScrollView>
