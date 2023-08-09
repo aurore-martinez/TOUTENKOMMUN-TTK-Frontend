@@ -305,6 +305,7 @@ export default function ProfileScreen({ navigation }) {
         if (data.result) {
           console.log('Les objets du user ont bien été trouvées:', data.objects);
           setUserObjects(data.objects);
+          setShowObjets(data.objects);
         } else {
           console.log("Erreur fetching les objets du user", data.error);
         }
@@ -322,6 +323,7 @@ export default function ProfileScreen({ navigation }) {
      if (dataCommu.result) {
        console.log('Les Commu du user ont bien été trouvées:', dataCommu.communities);
        setCommunities(dataCommu.communities);
+       setShowCommunities(dataCommu.communities)
      } else {
        console.log('Erreur fetching les commu du user:', dataCommu.error);
      }
@@ -333,7 +335,7 @@ export default function ProfileScreen({ navigation }) {
       
       const dataBorrow = await response.json();
       
-      if (dataBorrow.result) {
+      if (dataBorrow) {
         console.log("L'historique des emprunts du user ont bien été trouvées:", dataBorrow.emprunts);
         setEmprunt(dataBorrow.emprunts);
       } else {
@@ -348,13 +350,15 @@ export default function ProfileScreen({ navigation }) {
       
       const dataLend = await response.json();
       
-      if (dataLend.result) {
+      if (dataLend) {
         console.log("L'historique des prêts du user ont bien été trouvées:", dataLend.prets);
         setPret(dataLend.prets);
       } else {
         console.log("Erreur fetching l'historique' du user:", dataLend.error);
       }
     }
+
+
    //fonction logout
    const handleLogout = () => {
       setEmail("");
