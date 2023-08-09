@@ -11,12 +11,15 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Modal,
+  
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useDispatch } from "react-redux";
 import { logout } from "../../reducers/users";
 import { BACKEND_URL } from "../../Constants";
 import { useSelector } from "react-redux";
+import { useNavigation } from '@react-navigation/native';
+
 
 
 
@@ -47,21 +50,10 @@ export default function ChatScreen({ navigation }) {
   
 
   const handleLogout = () => {
-    setEmail("");
-    setUsername("");
-    setPhoto("");
-    setShowCommunities(false);
-    setShowPrets(false);
-    setShowEmprunts(false);
-    setShowObjets(false);
-    setUserObjects([]);
-    setName("");
-    setCommunities(null);
-    setDescription("");
     dispatch(logout());
-
     navigation.navigate("SignIn");
   };
+  // modal quand j'appuie sur je rends l'objet
   const openModal = () => {
     setModalVisible(true);
   };
@@ -69,7 +61,7 @@ export default function ChatScreen({ navigation }) {
   const closeModal = () => {
     setModalVisible(false);
   };
-  
+  //modal pour la fonction logout 
   const openModalLogout = () => {
     setModalLogoutVisible(true);
   };
@@ -80,8 +72,8 @@ export default function ChatScreen({ navigation }) {
 
   // Exemple de messages de chat
   const chatMessages = [
-    { user: "Laurent", text: "Wesh ma moula , prête ton T-MAX ?" },
-    { user: "Charlène", text: "Vasy frèro ! " },
+    { user: "Laurent", text: "Hey tu peux me prêter ton T-MAX ?" },
+    { user: "Charlène", text: "Pas de soucis ! " },
   ];
 
   // Fonction pour afficher les messages de chat
@@ -146,17 +138,26 @@ export default function ChatScreen({ navigation }) {
     }
   };
 
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* En-tête */}
       <View style={styles.header}>
-        <Text style={styles.title}>TOUTENKOMMUN</Text>
-        <FontAwesome
-          style={styles.userIcon}
-          name="power-off"
-          onPress={openModalLogout}
-        />
-      </View>
+    <FontAwesome
+    style={styles.backIcon}
+    name="chevron-left"
+    onPress={handleGoBack}
+    />
+    <Text style={styles.title}>TOUTENKOMMUN</Text>
+    <FontAwesome
+    style={styles.userIcon}
+    name="power-off"
+    onPress={openModalLogout}
+  />
+  </View>
 
       {/* Conteneur de discussion */}
       <View style={styles.chatContainer}>
@@ -187,29 +188,27 @@ export default function ChatScreen({ navigation }) {
       </ScrollView>
 
       {/* Bouton pour rendre l'objet */}
-      <View style={styles.btnCreateContent}>
-        <TouchableOpacity style={styles.btnCreate} onPress={openModal}>
+      <View style={styles.btnRenderContent}>
+        <TouchableOpacity style={styles.btnRender} onPress={openModal}>
           <Text style={styles.btnTextCreate}>Je rends l'objet</Text>
         </TouchableOpacity>
       </View>
 
       {/* Saisie de message */}
       <View style={styles.messageInputContainer}>
-        <TextInput
-          style={styles.messageInput}
-          placeholder="Écrire un message..."
-          value={message}
-          onChangeText={handleMessageChange}
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-          >
-            <Text style={styles.sendButtonText}>Envoyer</Text>
-          </KeyboardAvoidingView>
-        </TouchableOpacity>
-      </View>
-
+  <TextInput
+    style={styles.messageInput}
+    placeholder="Écrire un message..."
+    placeholderTextColor="black"
+    value={message}
+    onChangeText={handleMessageChange}
+  />
+  <TouchableOpacity style={styles.sendButton}>
+    <FontAwesome name="arrow-up" size={13} color="white" />
+  </TouchableOpacity>
+</View>
+    
+  
       {/*MODAL LOGOUT*/}
       <Modal
         visible={isModalLogoutVisible}
@@ -296,6 +295,15 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
     backgroundColor: "#F8FCFB",
+    // Add shadow properties here
+    shadowColor: "#171717",
+    shadowOffset: {
+      width: -2,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   header: {
     flexDirection: "row",
@@ -322,10 +330,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 30,
     backgroundColor: "#EEFCFF",
-    borderRadius: 10,
+    borderRadius: 20,
     marginTop: 20,
-    borderWidth: 4,
+    borderWidth: 3,
     borderColor: "#198EA5",
+  
   },
   leftContent: {
     flex: 1,
@@ -333,7 +342,7 @@ const styles = StyleSheet.create({
   },
   rightContent: {
     flex: 1,
-    alignItems: "flex-end",
+    alignItems: "flex-end"
   },
   userIconX: {
     margin: 10,
@@ -345,12 +354,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  btnCreateContent: {
+  btnRenderContent: {
     height: "15%",
     alignItems: "center",
     justifyContent: "center",
+    marginTop:100,
   },
-  btnCreate: {
+  btnRender: {
     flexDirection: "row",
     height: "50%",
     width: "87%",
@@ -372,10 +382,10 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   chatMessage: {
-    marginBottom: 10,
-    padding: 5,
-    backgroundColor: "#ECECEC",
-    borderRadius: 5,
+    padding: 8,
+    borderRadius: 10,
+    marginVertical: 5,
+    maxWidth: "70%", // ajustez selon vos préférences
   },
   messageInputContainer: {
     flexDirection: "row",
@@ -398,32 +408,29 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     backgroundColor: "#198EA5",
-    borderRadius: 5,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
+    borderRadius: 45, // Changer la valeur pour un look plus ou moins arrondi
+    padding: 15,
   },
   sendButtonText: {
     color: "white",
     fontWeight: "bold",
   },
   chatMessage: {
-    marginBottom: 10,
-    padding: 5,
-    borderRadius: 5,
-    backgroundColor: "#126171",
+    padding: 8,
+    borderRadius: 10,
+    marginVertical: 5,
+    maxWidth: "70%", // ajustez selon vos préférences
   },
   leftChatMessage: {
     backgroundColor: "#126171",
-    marginLeft: 10,
-    marginRight: "auto",
+    alignSelf: "flex-start",
   },
   rightChatMessage: {
     backgroundColor: "#EEFCFF",
-    marginRight: 10,
-    marginLeft: "auto",
     alignSelf: "flex-end",
   },
   messageText: {
+    fontSize: 16,
     color: "white",
   },
   blackText: {
@@ -503,4 +510,10 @@ const styles = StyleSheet.create({
   goldText: {
     color: "#CE8D2C",
   },
+  backIcon: {
+    margin: 10,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white', 
+  }
 });
