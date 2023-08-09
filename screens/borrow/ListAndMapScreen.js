@@ -157,10 +157,10 @@ export default function ListAndMapScreen({ route, navigation }) {
 		const data = await response.json();
 
 		if (response.ok) {
-			fetchFeed();
+      setSearchTerm("");
 		} else {
 			console.log(data.error);
-		}
+		} 
 	};
 
 	const filterSelectedCommu = (indice) => {
