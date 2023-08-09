@@ -10,6 +10,7 @@ import CreateScreen from './screens/community/CreateScreen';
 import ListAndMapScreen from './screens/borrow/ListAndMapScreen';
 import ProfileScreen from './screens/profile/ProfileScreen';
 import ChatScreen from './screens/chat/ChatScreen';
+import ConversationScreen from './screens/chat/ConversationScreen'
 
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -40,6 +41,15 @@ const CommunityStackNavigator = () => {
 	);
 };
 
+const ChatNavigator = () => {
+	return (
+		<Stack.Navigator screenOptions={{ headerShown: false }}>
+			<Stack.Screen name="ListRoom" component={ConversationScreen} />
+			<Stack.Screen name="ChatRoom" component={ChatScreen} />
+		</Stack.Navigator>
+	);
+};
+
 const TabNavigator = () => {
 	return (
 		<Tab.Navigator screenOptions={({ route }) => ({
@@ -51,7 +61,7 @@ const TabNavigator = () => {
 					return <FontAwesome5 name="tools" size={size} color={color} />
 				} else if (route.name === "Communauté") {
 					return <FontAwesome name="group" size={size} color={color} />
-				} else if (route.name === "Chat") {
+				}else if (route.name === "Chat") {
 					return <FontAwesome name="comments-o" size={size} color={color} />
 				}
 			},
@@ -62,12 +72,15 @@ const TabNavigator = () => {
 			<Tab.Screen name="Profil" component={ProfileScreen} />
 			<Tab.Screen name="Prêt" component={ListAndMapScreen} />
 			<Tab.Screen name="Communauté" component={CommunityStackNavigator} />
-			<Tab.Screen name="Chat" component={ChatScreen} />
+			<Tab.Screen name="Chat" component={ChatNavigator} />
 		</Tab.Navigator>
 	);
 };
 
 export default function App() {
+
+	
+
 	const [fontsLoaded] = useFonts({
 		'Tuffy': require('./assets/fonts/Tuffy-Regular.ttf'),
 		'Tuffy-Bold': require('./assets/fonts/Tuffy-Bold.ttf'),
