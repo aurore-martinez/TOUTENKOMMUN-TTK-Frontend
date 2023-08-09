@@ -25,28 +25,18 @@ import { useNavigation } from '@react-navigation/native';
 
 
 
-export default function ChatScreen({ navigation }) {
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [photo, setPhoto] = useState(null);
-  const [showCommunities, setShowCommunities] = useState(false);
-  const [showPrets, setShowPrets] = useState(false);
-  const [showEmprunts, setShowEmprunts] = useState(false);
-  const [showObjets, setShowObjets] = useState(false);
-  const [userObjects, setUserObjects] = useState([]);
-  const [name, setName] = useState("");
-  const [communities, setCommunities] = useState(null);
-  const [description, setDescription] = useState("");
+export default function ChatScreen({ navigation, route }) {
+
+
+
+
+
   const [isModalVisible, setModalVisible] = useState(false);
   const [isModalLogoutVisible, setModalLogoutVisible] = useState(false);
-  const [isConfirmationModalVisible, setIsConfirmationModalVisible] =
-    useState(false);
+  const [isConfirmationModalVisible, setIsConfirmationModalVisible] = useState(false);
 
   const dispatch = useDispatch();
   const token = useSelector((state) => state.users.token);
-  const objectId = useSelector((state) => state.users.objectId);
-  const transactionId= useSelector((state) => state.users.transactionId);
-
   
 
   const handleLogout = () => {
@@ -98,22 +88,30 @@ export default function ChatScreen({ navigation }) {
     ));
   };
 
+  console.log('token', token)
+  console.log('transactionId',route.params.transactionId);
+  console.log('objectId',route.params.objectId);
+  console.log('lenderId',route.params.lenderUser._id);  
 
   const handleReturnObject = async () => {
     try {
-      if (!borrowerUser || !object || !lenderUser) {
-        console.log('Utilisateur, preteur ou objet non trouvé');
+      if ( !route.params.objectId) {
+        console.log('Utilisateur preteur ou objet non trouvé');
+        return;
+      }
+      if (!route.params.lenderUser._id) {
+        console.log('Utilisateur preteur non trouvé');
         return;
       }
   
       const response = await fetch(`${BACKEND_URL}/transactions/return/${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ objectId, transactionId })
+        body: JSON.stringify({ objectId : route.params.objectId, transactionId : route.params.transactionId })
       });
   
       const transaction = await response.json();
-      if (transaction.result) {
+      if (transaction) {
         console.log("Objet rendu avec succès !! :D", transaction);
       } else {
         console.log('Erreur', transaction.error);
@@ -264,9 +262,7 @@ export default function ChatScreen({ navigation }) {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
-                console.log("token:", token);
-                console.log("objectId:", objectId);
-                console.log("transactionId:", transactionId);
+
 
                 handleReturnObject();
                 closeModal();

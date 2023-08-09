@@ -12,20 +12,10 @@ export default function ConversationScreen() {
   const [prets, setPret] = useState(null);
   const [emprunts,setEmprunt]= useState(null);
 
-  const dataPrets = [
-    { id: "1", title: "Laurent ", description: "Tu veux mon marteau ? " },
-    { id: "2", title: "Kapi", description: "Oublie pas ma scie" },
-    { id: "3", title: "Charlène", description: "Gros  T-MAX" },
-  ];
 
-  const dataEmprunts = [
-    { id: "1", title: "Aurore", description: "Description du maillot" },
-    { id: "2", title: "Martin", description: "Description de la bouteille" },
-    { id: "3", title: "Je sais pas ", description: "Description de la tasse" },
-  ];
-  const handleChatRoomPress = (item) => {
-    
-    navigation.navigate("ChatRoom", { itemId: item.id, itemTitle: item.title });
+  const handleChatRoomPress = (room) => {
+   
+    navigation.navigate("ChatRoom", { transactionId: room._id, borrowerUser: room.borrowerUser, lenderUser: room.lenderUser, objectId: room.object._id });
   };
 
    // On recupère le token
@@ -57,7 +47,7 @@ export default function ConversationScreen() {
         setPret(transaction.rooms)
       } else {
         console.log('Erreur', transaction.error);
-      }
+      }   
     } catch (error) {
       console.error('Erreur lors de affichage des prêts', error.message);
     }
@@ -186,7 +176,14 @@ export default function ConversationScreen() {
             onPress={() => handleChatRoomPress(room)}
           >
             {/* ... */}
+            {
+              room.object.photo ?
+                <Image source={{ uri: room.object.photo }} style={{ width: 100, height: 100 }} resizeMode="contain" />
+                  :
+                <FontAwesome name='image' size={100} />
+            }
             <Text style={styles.listTitle}>{room.lenderUser.username}</Text>
+            <Text style={styles.object}>{room.object.name}</Text>
             {/* ... */}
           </TouchableOpacity>,
           // Separator
