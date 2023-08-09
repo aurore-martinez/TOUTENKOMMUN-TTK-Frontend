@@ -106,33 +106,31 @@ export default function ChatScreen({ navigation }) {
     ));
   };
 
-  const returnObject = async (token, objectId, transactionId) => {
+
+  const handleReturnObject = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/return/${token}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          objectId: ({ _id: object._id }),
-          transactionId: ({ _id: transaction._id }),
-          token:token
-        }),
+      if (!borrowerUser || !object || !lenderUser) {
+        console.log('Utilisateur, preteur ou objet non trouvé');
+        return;
+      }
+  
+      const response = await fetch(`${BACKEND_URL}/transactions/return/${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objectId, transactionId })
       });
   
-      const data = await response.json();
-  
-      if (data.message) {
-
-    
-        console.log("Backend response:", { message: "Objet rendu avec succès !! :D" });
-        res.json({ message: "Objet rendu avec succès !! :D" });
-        console.log("Erreur lors du retour de l'objet :", data.error);
+      const transaction = await response.json();
+      if (transaction.result) {
+        console.log("Objet rendu avec succès !! :D", transaction);
+      } else {
+        console.log('Erreur', transaction.error);
       }
     } catch (error) {
-      console.log("Erreur :", error.message);
+      console.error('Erreur lors du retour objet', error.message);
     }
   };
+  
 
   // État et fonction pour la saisie de message
   const [message, setMessage] = useState("");
@@ -270,7 +268,10 @@ export default function ChatScreen({ navigation }) {
                 console.log("token:", token);
                 console.log("objectId:", objectId);
                 console.log("transactionId:", transactionId);
-                returnObject(token, objectId, transactionId);
+
+                handleReturnObject();
+                closeModal();
+
                 navigation.navigate("Prêt");
               }}
             >
