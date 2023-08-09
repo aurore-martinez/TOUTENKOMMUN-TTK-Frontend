@@ -21,7 +21,7 @@ import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { BACKEND_URL } from "../../Constants";
 import { useSelector } from "react-redux";
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 
 
 
@@ -188,6 +188,21 @@ export default function ListAndMapScreen({ route, navigation }) {
 
 		setUserCommunities(filtered);
 	};
+
+  const showAndroidDatePicker = () => {
+    DateTimePickerAndroid.open({
+      value: selectedDate,
+      onChange: (event, date) => {
+        if (date !== undefined) {
+          setSelectedDate(date);
+        }
+      },
+      mode: "date",
+      format: "DD-MM-YYYY",
+      minimumDate: new Date()
+    });
+  };
+
   // SearchRes sera défini qu'après l'initialisation du composant
   const searchRes = searchResults && searchResults.map((item, index) => (
     <TouchableOpacity
@@ -492,18 +507,25 @@ export default function ListAndMapScreen({ route, navigation }) {
                   <Text style={styles.modalJemprunteTextTitle}>Jusqu'au :</Text>
                 </View>
                 <View style={styles.datePickerContainer}>
-                  <DateTimePicker
-                    style={styles.datePicker}
-                    value={selectedDate}
-                    mode="date"
-                    format="DD-MM-YYYY"
-                    minimumDate={new Date()}
-                    onChange={(event, date) => {
-                      if (date !== undefined) {
-                        setSelectedDate(date);
-                      }
-                    }}
-                  />
+                  {Platform.OS === 'ios' && (
+                    <DateTimePicker
+                      value={selectedDate}
+                      mode="date"
+                      format="DD-MM-YYYY"
+                      minimumDate={new Date()}
+                      onChange={(event, date) => {
+                        if (date !== undefined) {
+                          setSelectedDate(date);
+                        }
+                      }}
+                    />
+                  )}
+
+                  {Platform.OS === 'android' && (
+                    <TouchableOpacity style={styles.datePicker} onPress={showAndroidDatePicker}>
+                      <Text style={{ color: '#198EA5' }}>{selectedDate.toLocaleDateString()}</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <View>
                   <TouchableOpacity
@@ -525,8 +547,10 @@ export default function ListAndMapScreen({ route, navigation }) {
                 </View>
               </View>
             )}
+          </TouchableOpacity>
+        </Modal>
 
-                   {/*MODAL LOGOUT*/}
+        {/*MODAL LOGOUT*/}
         <Modal
           visible={isModalLogoutVisible}
           animationType="slide"
@@ -558,10 +582,7 @@ export default function ListAndMapScreen({ route, navigation }) {
           </TouchableOpacity>
         </Modal>
 
-        </TouchableOpacity>
-        </Modal>
-
-        				{/* Modal de filtre sur les communautés */}
+        {/* Modal de filtre sur les communautés */}
 				<Modal
 					animationType="slide"
 					transparent={true}
@@ -905,5 +926,10 @@ const styles = StyleSheet.create({
     color: "#353639",
     fontWeight: "bold",
   },
-
+  datePicker: {
+    marginVertical: 10,
+    padding: 5,
+    backgroundColor: '#ddd',
+    borderRadius: 10
+  }
 });
