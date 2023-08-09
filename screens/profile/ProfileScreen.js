@@ -143,8 +143,8 @@ export default function ProfileScreen({ navigation }) {
           dispatch(addPhoto(data.photo));
           getUserObjects();
           getUserCommu();
-        getUserBorrows();
-        getUserLends();
+          getUserBorrows();
+          getUserLends();
         });
     }
   }, [token]);
