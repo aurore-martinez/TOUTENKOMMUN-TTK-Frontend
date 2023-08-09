@@ -305,7 +305,6 @@ export default function ProfileScreen({ navigation }) {
         if (data.result) {
           console.log('Les objets du user ont bien été trouvées:', data.objects);
           setUserObjects(data.objects);
-          setShowObjets(data.objects);
         } else {
           console.log("Erreur fetching les objets du user", data.error);
         }
@@ -323,7 +322,6 @@ export default function ProfileScreen({ navigation }) {
      if (dataCommu.result) {
        console.log('Les Commu du user ont bien été trouvées:', dataCommu.communities);
        setCommunities(dataCommu.communities);
-       setShowCommunities(dataCommu.communities)
      } else {
        console.log('Erreur fetching les commu du user:', dataCommu.error);
      }

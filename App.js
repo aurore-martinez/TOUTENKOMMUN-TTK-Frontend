@@ -44,7 +44,7 @@ const CommunityStackNavigator = () => {
 const ChatNavigator = () => {
 	return (
 		<Stack.Navigator screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="ListRoom" component={ConversationScreen} />
+			<Stack.Screen name="ListRoom" component={ConversationScreen} options={{ unmountOnBlur: true }}/>
 			<Stack.Screen name="ChatRoom" component={ChatScreen} />
 		</Stack.Navigator>
 	);
@@ -69,10 +69,10 @@ const TabNavigator = () => {
 			tabBarInactiveTintColor: 'gray',
 			headerShown: false,
 		})}>
-			<Tab.Screen name="Profil" component={ProfileScreen} />
+			<Tab.Screen name="Profil" component={ProfileScreen} options={{ unmountOnBlur: true }}/>
 			<Tab.Screen name="Prêt" component={ListAndMapScreen} />
 			<Tab.Screen name="Communauté" component={CommunityStackNavigator} />
-			<Tab.Screen name="Chat" component={ChatNavigator} />
+			<Tab.Screen name="Chat" component={ChatNavigator}/>
 		</Tab.Navigator>
 	);
 };
