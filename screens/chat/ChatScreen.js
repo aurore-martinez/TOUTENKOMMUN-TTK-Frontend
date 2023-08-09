@@ -1,4 +1,4 @@
-import React, { useState, useSelector } from "react";
+import React, { useState} from "react";
 import {
   Platform,
   SafeAreaView,
@@ -15,6 +15,12 @@ import {
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useDispatch } from "react-redux";
 import { logout } from "../../reducers/users";
+import { BACKEND_URL } from "../../Constants";
+import { useSelector } from "react-redux";
+
+
+
+
 
 export default function ChatScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -30,7 +36,15 @@ export default function ChatScreen({ navigation }) {
   const [description, setDescription] = useState("");
   const [isModalVisible, setModalVisible] = useState(false);
   const [isModalLogoutVisible, setModalLogoutVisible] = useState(false);
+  const [isConfirmationModalVisible, setIsConfirmationModalVisible] =
+    useState(false);
+
   const dispatch = useDispatch();
+  const token = useSelector((state) => state.users.token);
+  const objectId = useSelector((state) => state.users.objectId);
+  const transactionId= useSelector((state) => state.users.transactionId);
+
+  
 
   const handleLogout = () => {
     setEmail("");
@@ -55,7 +69,7 @@ export default function ChatScreen({ navigation }) {
   const closeModal = () => {
     setModalVisible(false);
   };
-
+  
   const openModalLogout = () => {
     setModalLogoutVisible(true);
   };
@@ -92,40 +106,31 @@ export default function ChatScreen({ navigation }) {
     ));
   };
 
-  // const handleRenderObject = async () => {
-  //   try {
-  //     const borrowerUser = await User.findOne({ token: token  });
-  //     const object = await Object.findById();
-  //     const transaction = await Transaction.findById();
 
-  //     if (!borrowerUser) {
-  //       console.log("Utilisateur emprunteur non trouvé");
-  //       return;
-  //     }
-
-  //     if (!object) {
-  //       console.log("Objet emprunté non trouvé");
-  //       return;
-  //     }
-
-  //     if (!transaction) {
-  //       console.log("Transaction non trouvée");
-  //       return;
-  //     }
-
-  //     transaction.isFinished = true;
-  //     await transaction.save();
-
-  //     object.isAvailable = false;
-  //     await object.save();
-
-  //     console.log("Objet rendu avec succès !! :D");
-  //   } catch (error) {
-  //     console.error("Erreur retour objet:", error.message);
-  //   }
-  // };
-
-  // handleRenderObject();
+  const handleReturnObject = async () => {
+    try {
+      if (!borrowerUser || !object || !lenderUser) {
+        console.log('Utilisateur, preteur ou objet non trouvé');
+        return;
+      }
+  
+      const response = await fetch(`${BACKEND_URL}/transactions/return/${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objectId, transactionId })
+      });
+  
+      const transaction = await response.json();
+      if (transaction.result) {
+        console.log("Objet rendu avec succès !! :D", transaction);
+      } else {
+        console.log('Erreur', transaction.error);
+      }
+    } catch (error) {
+      console.error('Erreur lors du retour objet', error.message);
+    }
+  };
+  
 
   // État et fonction pour la saisie de message
   const [message, setMessage] = useState("");
@@ -136,7 +141,6 @@ export default function ChatScreen({ navigation }) {
 
   const handleSendMessage = () => {
     if (message.trim() !== "") {
-     
       console.log(`Envoi du message : ${message}`);
       setMessage("");
     }
@@ -149,7 +153,7 @@ export default function ChatScreen({ navigation }) {
         <Text style={styles.title}>TOUTENKOMMUN</Text>
         <FontAwesome
           style={styles.userIcon}
-          name="user"
+          name="power-off"
           onPress={openModalLogout}
         />
       </View>
@@ -261,7 +265,13 @@ export default function ChatScreen({ navigation }) {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
+                console.log("token:", token);
+                console.log("objectId:", objectId);
+                console.log("transactionId:", transactionId);
+
+                handleReturnObject();
                 closeModal();
+
                 navigation.navigate("Prêt");
               }}
             >
