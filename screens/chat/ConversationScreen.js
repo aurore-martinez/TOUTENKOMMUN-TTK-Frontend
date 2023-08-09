@@ -9,15 +9,15 @@ export default function ConversationScreen() {
   const navigation = useNavigation();
 
   const dataPrets = [
-    { id: "1", title: "Marteau", description: "Tu veux mon marteau ? " },
-    { id: "2", title: "Scie", description: "Oublie pas ma scie" },
-    { id: "3", title: "T-MAX", description: "Gros  T-MAX" },
+    { id: "1", title: "Laurent ", description: "Tu veux mon marteau ? " },
+    { id: "2", title: "Kapi", description: "Oublie pas ma scie" },
+    { id: "3", title: "Charlène", description: "Gros  T-MAX" },
   ];
 
   const dataEmprunts = [
-    { id: "1", title: "MAILLOT", description: "Description du maillot" },
-    { id: "2", title: "Bouteille", description: "Description de la bouteille" },
-    { id: "3", title: "Tasse", description: "Description de la tasse" },
+    { id: "1", title: "Aurore", description: "Description du maillot" },
+    { id: "2", title: "Martin", description: "Description de la bouteille" },
+    { id: "3", title: "Je sais pas ", description: "Description de la tasse" },
   ];
   const handleChatRoomPress = (item) => {
     navigation.navigate("ChatRoom", { itemId: item.id, itemTitle: item.title });
@@ -130,7 +130,10 @@ export default function ConversationScreen() {
               style={styles.photoIcon}
             />
             <View style={styles.textContainer}>
-              <Text style={styles.listTitle}>{item.title}</Text>
+            <Text style={styles.listTitle}>{item.title}</Text>
+              {item.description && (
+                <Text style={styles.itemDescription}>{item.description}</Text>
+              )}
             </View>
           </TouchableOpacity>,
           // Separator
