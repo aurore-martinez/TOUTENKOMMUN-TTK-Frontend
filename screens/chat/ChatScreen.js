@@ -513,5 +513,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: 'white', 
-  }
+  },
+  ppIcon: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginRight: 10,
+  },
 });

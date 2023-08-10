@@ -5,12 +5,18 @@ import { StyleSheet, Text, View, TouchableOpacity, Platform, SafeAreaView, Statu
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { BACKEND_URL } from '../../Constants';
+import Global, { Colors, iconPadding, ttkFont } from "../../styles/Global";
+import { useDispatch } from 'react-redux';
+import { logout } from '../../reducers/users';
 
 export default function CreateScreen({ navigation }) {
+
+  const dispatch = useDispatch();
 
   //mémo : récupérer/traduire la localisation de l'input "Localisation"
     // On recupère le token
     const token = useSelector((state) => state.users.token);
+   
 
 
   const [isModalVisible, setModalVisible] = useState(false);
@@ -20,6 +26,8 @@ export default function CreateScreen({ navigation }) {
   const [isPrivate, setIsPrivate] = useState(false);
   const [isPrivateOrPublicUndefined, setIsPrivateOrPublicUndefiened] = useState(null);
   const [isPublic, setIsPublic] = useState(null);
+  const [isModalLogoutVisible, setModalLogoutVisible] = useState(false);
+
 
   const [accessCode, setAccessCode] = useState("");
 
@@ -95,57 +103,70 @@ export default function CreateScreen({ navigation }) {
   }
 }
 
+const openModalLogout = () => {
+  setModalLogoutVisible(true)
+  }
+  
+  const closeModalLogout = () => {
+  setModalLogoutVisible(false)
+  }
+
+     //fonction logout
+     const handleLogout = () => {
+      dispatch(logout());
+    
+      navigation.navigate('SignIn');
+    };
+
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView style={{ rowGap: 25 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
-          <FontAwesome style={styles.userIcon} name='power-off' />
+          <FontAwesome style={styles.userIcon} name="power-off" onPress={openModalLogout} />
         </View>
+
         <View style={styles.upperText}>
           <Text style={styles.h5}>Créer ma communauté</Text>
         </View>
-        <View style={styles.inputContent}>
-          <View style={styles.inputCommuContent}>
-            <FontAwesome style={styles.commuIcon} name='users' size={20} color='#353639' />
+        <View style={{ rowGap: 30, alignItems: 'center' }}>
+          <View style={Global.inputWithIcon}>
+          <FontAwesome style={{ padding:iconPadding }} name='users' size={20} color='#353639' />
             <TextInput
+              style={[{ width: '85%' }, Global.input]}
               placeholder="Nom communauté"
               placeholderTextColor='#353639'
+              autoCapitalize='none'
               value={communityName}
-              onChangeText={(text) => setCommunityName(text)}
-            />
+              onChangeText={(text) => setCommunityName(text)}/>
           </View>
-          <View style={styles.nameCommuText}>
-            <Text style={styles.commuText}>Nom de communauté libre</Text>
-          </View>
+       
         </View>
-        <View style={styles.inputContent}>
-          <View style={styles.inputCommuContent2}>
-            <FontAwesome style={styles.commuIcon} name='quote-left' size={20} color='#353639' />
+        <View style={{ rowGap: 30, alignItems: 'center' }}>
+          <View style={Global.inputWithIcon}>
+          <FontAwesome style={{ padding:iconPadding }} name='quote-left' size={20} color='#353639' />
             <TextInput
+              style={[{ width: '85%' }, Global.input]}
               placeholder="Description"
               placeholderTextColor='#353639'
+              autoCapitalize='none'
               value={communityDescription}
-              onChangeText={(text) => setCommunityDescription(text)}
-            />
+              onChangeText={(text) => setCommunityDescription(text)}/>
           </View>
-          <View style={styles.nameCommuText2}>
-            <Text style={styles.commuText}>Description de la communauté</Text>
-          </View>
+       
         </View>
-        <View style={styles.inputContent}>
-          <View style={styles.inputCommuContent}>
-            <FontAwesome style={styles.commuIcon} name='map-pin' size={20} color='#353639' />
+        <View style={{ alignItems: 'center' }}>
+          <View style={Global.inputWithIcon}>
+          <FontAwesome style={{ padding:iconPadding }} name='map-pin' size={20} color='#353639' />
             <TextInput
-              placeholder="Localisation"
+              style={[{ width: '85%' }, Global.input]}
+              placeholder="Localisation "
               placeholderTextColor='#353639'
+              autoCapitalize='none'
               value={communityLocalisation}
-              onChangeText={(text) => setCommunityLocalisation(text)}
-            />
+              onChangeText={(text) => setCommunityLocalisation(text)}/>
           </View>
-          <View style={styles.nameCommuText3}>
-            <Text style={styles.commuText}>Localisation</Text>
-          </View>
+       
         </View>
         <View style={styles.btnConnect}>
           <TouchableOpacity
@@ -154,7 +175,7 @@ export default function CreateScreen({ navigation }) {
             onPress={handlePrivateButtonPress}
           >
             <FontAwesome style={styles.ppIcon} name='lock' size={20} color={isPrivate ? '#F8FCFB' : '#198EA5'} />
-            <Text style={[styles.textBtnPrive, isPrivate ? styles.textActive : null]}>Privé</Text>
+            <Text style={[ styles.textBtnPrive, isPrivate ? styles.textActive : null]}>Privé</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.btnPublic, isPublic ? styles.btnActive : null]}
@@ -169,24 +190,29 @@ export default function CreateScreen({ navigation }) {
         {isPrivateOrPublicUndefined && <Text style={styles.error}>Choisir "Public" ou "Privé"</Text>}
         </View>
         <View style={styles.btnCreateContent}>
-          <TouchableOpacity style={styles.btnCreate} onPress={createCommunity}>
+          <TouchableOpacity style={[Global.filledButtonWithIcon, { marginTop: 30 }]} onPress={createCommunity}>
             <FontAwesome style={styles.ppIcon} name='user-plus' size={20} color='#F8FCFB' />
-            <Text style={styles.btnTextCreate}>Créer</Text>
+            <Text style={Global.textBtnWithIcon}>
+                  Créer
+                </Text>
           </TouchableOpacity>
         </View>
         <Modal visible={isModalVisible} animationType="slide" transparent={true}>
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text>Bravo, votre communauté <Text style={{ fontWeight: "bold" }}>"{communityName}"</Text> est prête ! Maintenant, invitez vos amis à vous rejoindre avec ce code : <Text style={{ fontWeight: "bold" }}>{accessCode}</Text></Text>
-              <View style={styles.modalBtnContent}>
-                <TouchableOpacity style={styles.emailButton} onPress={() => closeModal()}>
+            <Text style={Global.h5}>
+  Bravo, votre communauté <Text style={Global.h5}>"{communityName}"</Text> est prête ! Maintenant, invitez vos amis à vous rejoindre avec ce code :{' '}
+  <Text style={{ fontWeight: 'bold' }}>{accessCode}</Text>
+</Text>
+              <View style={Global.buttonsContainers}>
+                <TouchableOpacity style={[Global.btnRes, { backgroundColor: '#198EA5' }]} activeOpacity={0.8} onPress={() => closeModal()}>
                   <FontAwesome style={styles.ppIcon} name='envelope-o' size={20} color='#F8FCFB' />
                   <Text style={styles.emailButtonText}>E-mail</Text>
                 </TouchableOpacity>
                     <TouchableOpacity
-                      style={styles.smsButton}
+                     style={[Global.btnRes, { backgroundColor: '#198EA5' }]} activeOpacity={0.8}
                       onPress={() => {
-                        const smsBody = encodeURIComponent(`Rejoignez ma communauté avec le code : ${accessCode}`);
+                        const smsBody = encodeURIComponent(`Rejoignez ma communauté ${communityName} avec le code : ${accessCode}`);
                         Linking.openURL(`sms:&body=${smsBody}`);
                       }}
                     >
@@ -203,6 +229,39 @@ export default function CreateScreen({ navigation }) {
             </View>
           </View>
         </Modal>
+
+        {/*MODAL LOGOUT*/}
+        <Modal
+                      visible={isModalLogoutVisible}
+                      animationType="slide"
+                      transparent={true}
+                    >
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPressOut={closeModalLogout} // Ferme la modal lorsque vous cliquez en dehors d'elle
+                        style={styles.modalContainer}
+                      >
+                        <TouchableOpacity activeOpacity={1} style={styles.modalLogoutContent}>
+                          {/* Contenu de la modal */}
+                          <View style={styles.modalBtnContent}>
+                            {/* Bouton pour supprimer la communauté */}
+                            <TouchableOpacity
+                              style={styles.deconnecterButton}
+                              onPress={handleLogout}
+                            >
+                              <FontAwesome
+                                style={styles.ppIcon}
+                                name="sign-out"
+                                size={20}
+                                color="#F8FCFB"
+                              />
+                              <Text style={styles.smsButtonText}>Se déconnecter</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    </Modal>
+
         <StatusBar style="auto" />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -215,22 +274,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FCFB',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 10,
-    backgroundColor: '#198EA5',
+    backgroundColor: "#198EA5",
+    height: "10%",
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
   },
   userIcon: {
     margin: 10,
     fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
   },
   upperText: {
     height: '14%',
@@ -330,12 +390,13 @@ const styles = StyleSheet.create({
   textBtnPrive: {
     color: '#198EA5',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: ttkFont
+
   },
   textBtnPublic: {
     color: '#198EA5',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: ttkFont,
   },
   ppIcon: {
     fontSize: 20,
@@ -425,5 +486,23 @@ const styles = StyleSheet.create({
   error: {
     color: 'red',
     textAlign: 'center'
+  },
+  deconnecterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "70%",
+    backgroundColor: "#198EA5",
+    padding: 10,
+    borderRadius: 5,
+  },
+  modalLogoutContent: {
+    backgroundColor: "#F8FCFB",
+    padding: 20,
+    borderRadius: 10,
+    marginLeft: 25,
+    marginRight: 25,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
 });

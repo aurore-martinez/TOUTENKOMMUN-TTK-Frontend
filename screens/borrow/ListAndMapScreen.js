@@ -22,8 +22,13 @@ import * as Location from "expo-location";
 import { BACKEND_URL } from "../../Constants";
 import { useSelector } from "react-redux";
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../reducers/users';
+import Global, { Colors, ttkFont } from "../../styles/Global";
 
 export default function ListAndMapScreen({ route, navigation }) {
+  const dispatch = useDispatch();
+
 	// États pour gérer l'onglet sélectionné, la localisation, l'élément sélectionné et la modal
 	const [selectedTab, setSelectedTab] = useState("Liste");
 	const [location, setLocation] = useState(null);
@@ -278,22 +283,10 @@ export default function ListAndMapScreen({ route, navigation }) {
 
    //fonction logout
    const handleLogout = () => {
-    setEmail("");
-    setAddress("");
-    setUsername("");
-    setPhoto("");
-    setShowCommunities(false);
-    setShowPrets(false);
-    setShowEmprunts(false);
-    setShowObjets(false);
-    setUserObjects([]);
-    setName("");
-    setCommunities(null);
-    setDescription("");
-    dispatch(logout());
-  
-    navigation.navigate('SignIn');
-  };
+      dispatch(logout());
+    
+      navigation.navigate('SignIn');
+    };
 
   // Rendu du composant
   return (
@@ -630,9 +623,12 @@ const styles = StyleSheet.create({
     color: "white",
   },
   titleh: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#353639",
+  
+
+    fontSize: 23,
+    fontFamily: ttkFont,
+    fontWeight: "bold",
+    color: Colors.ttkBlack,
   },
   titleh1: {
     fontSize: 20,
@@ -728,6 +724,8 @@ const styles = StyleSheet.create({
   },
   selectedTabText: {
     color: "#198EA5",
+    fontFamily: ttkFont,
+
   },
   contentList: {
     width: "100%",
