@@ -405,7 +405,7 @@ export default function ProfileScreen({ navigation }) {
         {/*HEADER*/}
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
-          <FontAwesome style={styles.userIcon} name="user" onPress={openModalLogout} />
+          <FontAwesome style={styles.userIcon} name="power-off" onPress={openModalLogout} />
         </View>
 
         {/*CONTENT*/}
@@ -782,9 +782,9 @@ export default function ProfileScreen({ navigation }) {
 
                             {/* Bouton pour partager par SMS la communauté */}
                             <TouchableOpacity
-                      style={styles.smsButton}
+                      style={styles.desabonnerButton}
                       onPress={() => {
-                        const smsBody = encodeURIComponent(`Rejoignez ma communauté avec le code : ${selectedCommunity.accessCode}`);
+                        const smsBody = encodeURIComponent(`Rejoignez ma communauté ${selectedCommunity.name} avec le code : ${selectedCommunity.accessCode}`);
                         Linking.openURL(`sms:&body=${smsBody}`);
                       }}
                     >
@@ -1181,11 +1181,12 @@ export default function ProfileScreen({ navigation }) {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
-                width: "70%",
+                width: 160,
                 backgroundColor: "#198EA5",
                 padding: 10,
                 borderRadius: 5,
                 marginTop: 10,
+                marginHorizontal: 15,
               },
               objectItem: {
                 alignItems: 'center',

@@ -11,6 +11,21 @@ export default function ConversationScreen() {
   const navigation = useNavigation();
   const [prets, setPret] = useState(null);
   const [emprunts,setEmprunt]= useState(null);
+  const [isModalLogoutVisible, setModalLogoutVisible] = useState(false);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigation.navigate("SignIn");
+  };
+
+  //modal pour la fonction logout 
+  const openModalLogout = () => {
+    setModalLogoutVisible(true);
+  };
+
+  const closeModalLogout = () => {
+    setModalLogoutVisible(false);
+  };
 
 
   const handleChatRoomPress = (room) => {
@@ -79,11 +94,11 @@ export default function ConversationScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.title}>TOUTENKOMMUN</Text>
-        <FontAwesome style={styles.userIcon} name="power-off" />
-      </View>
+        {/*HEADER*/}
+        <View style={styles.header}>
+          <Text style={styles.title}>TOUTENKOMMUN</Text>
+          <FontAwesome style={styles.userIcon} name="power-off" onPress={openModalLogout} />
+        </View>
 
       {/* "Messages" Title */}
       <View style={styles.message}>

@@ -13,7 +13,7 @@ import {
 	Modal,
 	ActivityIndicator,
 	Dimensions,
-  Image
+  Image,
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
@@ -275,15 +275,19 @@ export default function ListAndMapScreen({ route, navigation }) {
     setModalLogoutVisible(false)
   }
 
-  const handleLogout = () => {
+   //fonction logout
+   const handleLogout = () => {
     setEmail("");
+    setAddress("");
     setUsername("");
     setPhoto("");
+    setShowCommunities(false);
     setShowPrets(false);
     setShowEmprunts(false);
     setShowObjets(false);
     setUserObjects([]);
     setName("");
+    setCommunities(null);
     setDescription("");
     dispatch(logout());
   
@@ -296,12 +300,11 @@ export default function ListAndMapScreen({ route, navigation }) {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* En-tête */}
+        {/*HEADER*/}
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
-          <FontAwesome style={styles.userIcon} name="user" onPress={openModalLogout}/>
+          <FontAwesome style={styles.userIcon} name="power-off" onPress={openModalLogout} />
         </View>
-        <StatusBar style="auto" />
 
         <View style={styles.pageContent}>
 
@@ -532,37 +535,37 @@ export default function ListAndMapScreen({ route, navigation }) {
           </TouchableOpacity>
         </Modal>
 
-        {/*MODAL LOGOUT*/}
-        <Modal
-          visible={isModalLogoutVisible}
-          animationType="slide"
-          transparent={true}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPressOut={closeModalLogout} // Ferme la modal lorsque vous cliquez en dehors d'elle
-            style={styles.modalContainer}
-          >
-            <TouchableOpacity activeOpacity={1} style={styles.modalLogoutContent}>
-              {/* Contenu de la modal */}
-              <View style={styles.modalBtnContent}>
-                {/* Bouton pour supprimer la communauté */}
-                <TouchableOpacity
-                  style={styles.deconnecterButton}
-                  onPress={handleLogout}
-                >                 
-                  <FontAwesome
-                    style={styles.ppIcon}
-                    name="sign-out"
-                    size={20}
-                    color="#F8FCFB"
-                  />
-                  <Text style={styles.smsButtonText}>Se déconnecter</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </Modal>
+                    {/*MODAL LOGOUT*/}
+                    <Modal
+                      visible={isModalLogoutVisible}
+                      animationType="slide"
+                      transparent={true}
+                    >
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPressOut={closeModalLogout} // Ferme la modal lorsque vous cliquez en dehors d'elle
+                        style={styles.modalContainer}
+                      >
+                        <TouchableOpacity activeOpacity={1} style={styles.modalLogoutContent}>
+                          {/* Contenu de la modal */}
+                          <View style={styles.modalBtnContent}>
+                            {/* Bouton pour supprimer la communauté */}
+                            <TouchableOpacity
+                              style={styles.deconnecterButton}
+                              onPress={handleLogout}
+                            >
+                              <FontAwesome
+                                style={styles.ppIcon}
+                                name="sign-out"
+                                size={20}
+                                color="#F8FCFB"
+                              />
+                              <Text style={styles.smsButtonText}>Se déconnecter</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    </Modal>
 
         {/* Modal de filtre sur les communautés */}
 				<Modal
@@ -611,12 +614,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 10,
-    height: "10%",
     backgroundColor: "#198EA5",
+    height: "10%",
   },
   title: {
     fontSize: 20,
-    fontWeight: "600",
+    fontWeight: "bold",
+    color: "white",
+  },
+  userIcon: {
+    margin: 10,
+    fontSize: 20,
+    fontWeight: "bold",
     color: "white",
   },
   titleh: {
@@ -764,15 +773,52 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
+  modalLogoutContent: {
+    backgroundColor: "#F8FCFB",
+    padding: 20,
+    borderRadius: 10,
+    marginLeft: 25,
+    marginRight: 25,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  modalBtnContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-evenly",
+  },
+  deconnecterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "70%",
+    backgroundColor: "#198EA5",
+    padding: 10,
+    borderRadius: 5,
+  },
+  ppIcon: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginRight: 10,
+  },
+  smsButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
   modalTitle: {
     borderBottomColor: "#198EA5",
     borderBottomWidth: 2,
   },
-    modalJemprunteTextTitle: {
+  modalJemprunteTitle: {
+    marginBottom: 10,
+  },
+  modalJemprunteTextTitle: {
     fontWeight: "bold",
   },
   objectDescriptionModal: {
     flexDirection: 'row',
+    width: 275,
     height: 100,
     alignItems: 'center',
   },
@@ -783,8 +829,14 @@ const styles = StyleSheet.create({
     borderColor: "#198EA5",
   },
   modalTitleObject: {
+    width: 200,
     fontSize: 18,
     fontWeight: "bold",
+    marginLeft: 5,
+  },
+  modalTitleText: {
+    width: 200,
+    fontSize: 18,
     marginLeft: 5,
   },
   modalCloseButton: {
@@ -804,12 +856,16 @@ const styles = StyleSheet.create({
     datePickerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
   },
   emprunterButton: {
     backgroundColor: "#198EA5",
+    width: 250,
     borderRadius: 10,
     padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   emprunterButtonText: {
     color: "white",
