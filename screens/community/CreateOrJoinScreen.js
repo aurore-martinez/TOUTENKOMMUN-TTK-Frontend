@@ -20,12 +20,12 @@ export default function CreateOrJoinScreen({ navigation }) {
 		setModalLogoutVisible(false)
 	  }
 
-	     //fonction logout
-		 const handleLogout = () => {
-			dispatch(logout());
-		  
-			navigation.navigate('SignIn');
-		  };
+   //fonction logout
+   const handleLogout = () => {
+	dispatch(logout());
+  
+	navigation.navigate('SignIn');
+  };
 	
 	return (
 		<SafeAreaView style={styles.container}>
