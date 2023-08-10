@@ -22,8 +22,12 @@ import * as Location from "expo-location";
 import { BACKEND_URL } from "../../Constants";
 import { useSelector } from "react-redux";
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../reducers/users';
 
 export default function ListAndMapScreen({ route, navigation }) {
+  const dispatch = useDispatch();
+
 	// États pour gérer l'onglet sélectionné, la localisation, l'élément sélectionné et la modal
 	const [selectedTab, setSelectedTab] = useState("Liste");
 	const [location, setLocation] = useState(null);
@@ -158,6 +162,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 
 		if (response.ok) {
       setSearchTerm("");
+      fetchFeed();
 		} else {
 			console.log(data.error);
 		} 
@@ -277,22 +282,10 @@ export default function ListAndMapScreen({ route, navigation }) {
 
    //fonction logout
    const handleLogout = () => {
-    setEmail("");
-    setAddress("");
-    setUsername("");
-    setPhoto("");
-    setShowCommunities(false);
-    setShowPrets(false);
-    setShowEmprunts(false);
-    setShowObjets(false);
-    setUserObjects([]);
-    setName("");
-    setCommunities(null);
-    setDescription("");
-    dispatch(logout());
-  
-    navigation.navigate('SignIn');
-  };
+      dispatch(logout());
+    
+      navigation.navigate('SignIn');
+    };
 
   // Rendu du composant
   return (
