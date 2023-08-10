@@ -14,6 +14,7 @@ import {
   ScrollView,
   Button
 } from "react-native";
+import { Linking } from 'react-native';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import { useSelector } from "react-redux";
@@ -156,34 +157,54 @@ export default function ProfileScreen({ navigation }) {
 
   const handleAddObject = async () => {
     if (name !== "") {
-      const formData = new FormData();
-      formData.append("photoFromFront", {
-        uri: objectPicture,
-        name: "photo.jpg",
-        type: "image/jpeg",
-      });
-
-      let response =  await fetch(`${BACKEND_URL}/${token}/object/cloudinary/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const photoObj = await response.json();
-      console.log("Secure URL Cloudinary", photoObj.url);
+      let photoObj = null;
+      if (objectPicture) {
+        const formData = new FormData();
+        formData.append("photoFromFront", {
+          uri: objectPicture,
+          name: "photo.jpg",
+          type: "image/jpeg",
+        });
+  
+        let response =  await fetch(`${BACKEND_URL}/${token}/object/cloudinary/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+  
+        photoObj = await response.json();
+        console.log("Secure URL Cloudinary", photoObj.url);
+      }
 
       response = await fetch(`${BACKEND_URL}/users/profil/object/${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, photo: photoObj.url })
+        body: JSON.stringify({ name, description, photo: photoObj?.url || "", communities: availableIn })
       });
 
       const dataObject = await response.json();
       if (dataObject.result) {
         console.log('Objet ajouté', dataObject.result);
         getUserObjects();
+        setName("");
+        setDescription("");
+        setAvailableIn([]);
+        setObjectPicture("");
       } else {
         console.log('Erreur objet non ajouté', dataObject.error);
       }
+    }
+  };
+
+  const [availableIn, setAvailableIn] = useState([]);
+
+  const handleAvailableIn = (indice) => {
+    const selectedId = communities[indice]._id;
+    
+    if (availableIn.includes(selectedId)) {
+      setAvailableIn(prevIds => prevIds.filter(id => id !== selectedId));
+    } else {
+      setAvailableIn(prevIds => [...prevIds, selectedId]);
+      console.log('availableIn', availableIn)
     }
   };
 
@@ -680,10 +701,23 @@ export default function ProfileScreen({ navigation }) {
                                 )
                 }
               </View>
-                          <View style={styles.choixCommu}>
+                          <View style={styles.choixCommuAddObjet}>
                             <Text>Communauté(s) concerné(s) :</Text>
-                            <Text>Le Kiri</Text>
-                            <Text>La Moula</Text>
+                            <ScrollView style={{  width: '50%', height:'50%' }} contentContainerStyle={{ flex: 1, justifyContent: 'center', rowGap: 25}}>
+								              {
+									              communities && communities.map((commu, i) => {
+										              return (
+                                    <TouchableOpacity 
+                                    key={i} 
+                                    onPress={() => handleAvailableIn(i)} 
+                                    style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', columnGap: 20, backgroundColor: communities.includes(commu._id) ? '#CE8D2C' : undefined }}>
+                                      <View style={{ backgroundColor: communities.includes(commu._id) ? '#FFFFFF' : 'transparent', borderColor: '#CE8D2C', borderWidth: 1, width: 10, height: 10, borderRadius: 2 }} />
+                                      <Text>{commu.name}</Text>
+                                    </TouchableOpacity>
+                                  )
+                                })
+                              }
+							              </ScrollView>
                           </View>
                           <View style={styles.modalBtnContent}>
                             {/* Bouton pour l'ajout d'un objet */}
@@ -745,6 +779,20 @@ export default function ProfileScreen({ navigation }) {
                               />
                               <Text style={styles.smsButtonText}>Se désabonner</Text>
                             </TouchableOpacity>
+
+                            {/* Bouton pour partager par SMS la communauté */}
+                            <TouchableOpacity
+                      style={styles.smsButton}
+                      onPress={() => {
+                        const smsBody = encodeURIComponent(`Rejoignez ma communauté avec le code : ${selectedCommunity.accessCode}`);
+                        Linking.openURL(`sms:&body=${smsBody}`);
+                      }}
+                    >
+                  <FontAwesome style={styles.ppIcon} name='commenting' size={20} color='#F8FCFB' />
+                  <Text style={styles.smsButtonText}>Partager par SMS</Text>
+                </TouchableOpacity>
+
+
                           </View>
                         </TouchableOpacity>
                       </TouchableOpacity>
@@ -1084,10 +1132,20 @@ export default function ProfileScreen({ navigation }) {
                 borderRadius: 5,
                 marginTop: 10,
               },
+              smsButton: {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40%',
+                backgroundColor: '#198EA5',
+                padding: 10,
+                borderRadius: 5,
+                marginTop: 10,
+              },
               smsButtonText: {
-                color: "white",
-                textAlign: "center",
-                fontWeight: "bold",
+                color: 'white',
+                textAlign: 'center',
+                fontWeight: 'bold',
               },
               ppIcon: {
                 fontSize: 20,
@@ -1133,6 +1191,9 @@ export default function ProfileScreen({ navigation }) {
               objectItem: {
                 alignItems: 'center',
                 marginRight: 14
+              },
+              choixCommuAddObjet : {
+                height : '50%',
               },
                                             empruntItem: {
                                               // borderTopColor: "#198EA5",
