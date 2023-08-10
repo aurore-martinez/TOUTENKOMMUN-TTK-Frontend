@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Platform, SafeAreaView, StatusBar, TouchableOpacity, Image, ScrollView, StyleSheet, Text, View, TouchableNativeFeedback } from 'react-native';
+import { Platform, SafeAreaView, StatusBar, TouchableOpacity, Image, ScrollView, StyleSheet, Text, View, TouchableNativeFeedback, Modal } from 'react-native';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { BACKEND_URL } from "../../Constants";
+import { useDispatch } from 'react-redux';
+import { logout } from '../../reducers/users';
 
 export default function ConversationScreen() {
+
+  const dispatch = useDispatch();
+
   const [selectedTab, setSelectedTab] = useState("Prêt");
   const navigation = useNavigation();
   const [prets, setPret] = useState(null);
   const [emprunts,setEmprunt]= useState(null);
   const [isModalLogoutVisible, setModalLogoutVisible] = useState(false);
-
-  const handleLogout = () => {
-    dispatch(logout());
-    navigation.navigate("SignIn");
-  };
 
   //modal pour la fonction logout 
   const openModalLogout = () => {
@@ -27,9 +27,16 @@ export default function ConversationScreen() {
     setModalLogoutVisible(false);
   };
 
+   //fonction logout
+   const handleLogout = () => {
+    dispatch(logout());
+  
+    navigation.navigate('SignIn');
+  };
+
+
 
   const handleChatRoomPress = (room) => {
-   
     navigation.navigate("ChatRoom", { transactionId: room._id, borrowerUser: room.borrowerUser, lenderUser: room.lenderUser, objectId: room.object._id });
   };
 
@@ -90,6 +97,7 @@ export default function ConversationScreen() {
       console.error('Erreur lors de affichage des emprunts', error.message);
     }
   };
+
   
 
   return (
@@ -126,7 +134,7 @@ export default function ConversationScreen() {
           selectedTab === "Prêt" && styles.selectedTabText,
         ]}
       >
-        Prêt
+        Prêts
       </Text>
     </View>
   </TouchableOpacity>
@@ -149,14 +157,11 @@ export default function ConversationScreen() {
           selectedTab === "Emprunt" && styles.selectedTabText,
         ]}
       >
-        Emprunt
+        Emprunts
       </Text>
     </View>
   </TouchableOpacity>
 </View>
-
-      {/* Barre de séparation */}
-      <View style={styles.separator} />
 
       {/* Liste des Prêts ou Emprunts */}
       <ScrollView>
@@ -168,16 +173,29 @@ export default function ConversationScreen() {
             style={styles.itemContainer}
             onPress={() => handleChatRoomPress(room)}
           >
-            {/* ... */}
+            <View>
             {
               room.object.photo ?
-                <Image source={{ uri: room.object.photo }} style={{ width: 100, height: 100 }} resizeMode="contain" />
+                <Image source={{ uri: room.object.photo }} style={styles.photoMsg}/>
                   :
-                <FontAwesome name='image' size={100} />
+                <FontAwesome name='image' size={70} style={styles.avatarMsg}/>
             }
-            <Text style={styles.listTitle}>{room.borrowerUser.username}</Text>
-            <Text style={styles.object}>{room.object.name}</Text>
-            {/* ... */}
+            </View>
+            <View style={styles.info}>
+              <Text style={styles.listTitle}>{room.borrowerUser.username}</Text>
+              <Text style={styles.object}>{room.object.name}</Text>
+              <Text style={styles.empruntText}>
+                                    Statut:
+                                    {room.isFinished ? 
+                                  <Text style={[styles.empruntText, { color: '#198EA5' }, { fontWeight: 'bold' }]}> Terminé</Text>
+                                  : 
+                                  <Text style={[styles.empruntText, { color: '#CE8D2C' }, { fontWeight: 'bold' }]}> En cours</Text>
+                                  }
+                </Text>
+            </View>
+            <View style={styles.flecheMsg}>
+              <FontAwesome name='angle-right' size={30} color={'#198EA5'}/>
+            </View>
           </TouchableOpacity>,
           // Separator
           <View style={styles.separator} key={`separator-${room._id}`} />,
@@ -190,21 +208,66 @@ export default function ConversationScreen() {
             style={styles.itemContainer}
             onPress={() => handleChatRoomPress(room)}
           >
-            {/* ... */}
+            <View>
             {
               room.object.photo ?
-                <Image source={{ uri: room.object.photo }} style={{ width: 100, height: 100 }} resizeMode="contain" />
+                <Image source={{ uri: room.object.photo }} style={styles.photoMsg}/>
                   :
-                <FontAwesome name='image' size={100} />
+                <FontAwesome name='image' size={70} style={styles.avatarMsg} />
             }
-            <Text style={styles.listTitle}>{room.lenderUser.username}</Text>
-            <Text style={styles.object}>{room.object.name}</Text>
-            {/* ... */}
+            </View>
+            <View style={styles.info}>
+              <Text style={styles.listTitle}>{room.lenderUser.username}</Text>
+              <Text style={styles.object}>{room.object.name}</Text>
+              <Text style={styles.empruntText}>
+                                    Statut:
+                                    {room.isFinished ? 
+                                  <Text style={[styles.empruntText, { color: '#198EA5' }, { fontWeight: 'bold' }]}> Terminé</Text>
+                                  : 
+                                  <Text style={[styles.empruntText, { color: '#CE8D2C' }, { fontWeight: 'bold' }]}> En cours</Text>
+                                  }</Text>
+            </View>
+            <View style={styles.flecheMsg}>
+              <FontAwesome name='angle-right' size={30} color={'#198EA5'}/>
+            </View>
           </TouchableOpacity>,
           // Separator
           <View style={styles.separator} key={`separator-${room._id}`} />,
         ]
       ))}
+
+      {/*MODAL LOGOUT*/}
+      <Modal
+                      visible={isModalLogoutVisible}
+                      animationType="slide"
+                      transparent={true}
+                    >
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPressOut={closeModalLogout} // Ferme la modal lorsque vous cliquez en dehors d'elle
+                        style={styles.modalContainer}
+                      >
+                        <TouchableOpacity activeOpacity={1} style={styles.modalLogoutContent}>
+                          {/* Contenu de la modal */}
+                          <View style={styles.modalBtnContent}>
+                            {/* Bouton pour supprimer la communauté */}
+                            <TouchableOpacity
+                              style={styles.deconnecterButton}
+                              onPress={handleLogout}
+                            >
+                              <FontAwesome
+                                style={styles.ppIcon}
+                                name="sign-out"
+                                size={20}
+                                color="#F8FCFB"
+                              />
+                              <Text style={styles.smsButtonText}>Se déconnecter</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    </Modal>
+
 </ScrollView>
 
 
@@ -242,9 +305,8 @@ const styles = StyleSheet.create({
   },
   conversationTitle: {
     fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 10,
+    fontWeight: "600",
+    color: "#353639",
   },
   rowMenu: {
     flexDirection: "row",
@@ -253,25 +315,21 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "10%",
     backgroundColor: "#F8FCFB",
+    borderBottomWidth: 1,
+    borderBottomColor : "#198EA5"
   },
   selectedTab: {
     borderBottomColor: "#198EA5",
     borderBottomWidth: 2,
   },
-  separator: {
-    height: 1,
-    backgroundColor: "black",
+  selectedTabText: {
+    color: "#198EA5",
   },
-
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 20,
-    paddingHorizontal: 10,
-    marginHorizontal: 10,
-    backgroundColor: "#FFF", // Add a background color to make the items more distinct
-    borderRadius: 10, // Add a border radius for a rounded look
-    marginBottom: 10, // Add some margin between items
+    borderBottomWidth: 1,
+    borderBottomColor : "#198EA5"
   },
   photoIcon: {
     marginRight: 10,
@@ -279,6 +337,11 @@ const styles = StyleSheet.create({
   listTitle: {
     fontSize: 24,
     fontWeight: "bold",
+    color: "#198EA5",
+  },
+  object: {
+    fontWeight: "bold",
+    color: "#353639",
   },
   itemDescription: {
     fontSize: 18,
@@ -287,4 +350,88 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalLogoutContent: {
+    backgroundColor: "#F8FCFB",
+    padding: 20,
+    borderRadius: 10,
+    marginLeft: 25,
+    marginRight: 25,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  modalBtnContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-evenly",
+  },
+  deconnecterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "70%",
+    backgroundColor: "#198EA5",
+    padding: 10,
+    borderRadius: 5,
+  },
+  ppIcon: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginRight: 10,
+  },
+  smsButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  iconTextContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#198EA5",
+    marginLeft: 3,
+  },
+  listIcon: {
+    marginRight: 10,
+  },
+  mapIcon: {
+    marginRight: 10,
+  },
+  message: {
+    width: "100%",
+    height: "10%",
+    backgroundColor: "#F8FCFB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  photoMsg: {
+    height: 70,
+    width: 70,
+    margin: 10,
+    borderWidth: 2,
+    borderColor: "#198EA5",
+  },
+  avatarMsg: {
+    margin: 10,
+    color: "#198EA5",
+  },
+  empruntText: {
+    textAlign: "center",
+  },
+  info: {
+    width: 200,
+    alignItems: 'flex-start'
+  },
+  flecheMsg: {
+  alignItems: 'flex-end',
+  width: 90
+  }
 });

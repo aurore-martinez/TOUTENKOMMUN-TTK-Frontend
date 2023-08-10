@@ -402,6 +402,7 @@ export default function ProfileScreen({ navigation }) {
     if (!hasCameraPermission || !isFocused || !isCameraActive) {
       return (
         <SafeAreaView style={styles.container}>
+          
         {/*HEADER*/}
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
@@ -1195,14 +1196,14 @@ export default function ProfileScreen({ navigation }) {
               choixCommuAddObjet : {
                 height : '50%',
               },
-                                            empruntItem: {
-                                              // borderTopColor: "#198EA5",
-                                              borderBottomColor: "#198EA5",
-                                              // borderTopWidth: 0.25,
-                                              borderBottomWidth: 0.25
-                                            },
-                                            empruntText: {
-                                              textAlign: "center",
-                                            }
+              empruntItem: {
+                // borderTopColor: "#198EA5",
+                borderBottomColor: "#198EA5",
+                // borderTopWidth: 0.25,
+                borderBottomWidth: 0.25
+              },
+              empruntText: {
+                textAlign: "center",
+              }
             });
             
