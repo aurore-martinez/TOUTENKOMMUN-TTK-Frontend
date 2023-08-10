@@ -23,6 +23,8 @@ import { Camera, CameraType, FlashMode } from "expo-camera";
 import { useIsFocused } from "@react-navigation/native";
 import { useDispatch } from 'react-redux';
 import { addPhoto, logout } from '../../reducers/users';
+import Global, { Colors, ttkFont } from "../../styles/Global";
+
 
 export default function ProfileScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -940,9 +942,16 @@ export default function ProfileScreen({ navigation }) {
               },
               infoUser: {
                 fontSize: 20,
+                color: Colors.ttkBlack,
+                fontWeight: "bold",
+                fontFamily: ttkFont,
+
               },
               infoAddressUser: {
                 fontSize: 18,
+                fontFamily: ttkFont,
+                fontWeight: "bold",
+                color: Colors.ttkBlack,
               },
               photos: {
                 margin: 10,
@@ -978,6 +987,10 @@ export default function ProfileScreen({ navigation }) {
               },
               menuText: {
                 fontSize: 16,
+                fontFamily: ttkFont,
+                fontWeight: "bold",
+                color: Colors.ttkBlack,
+
               },
               subMenuContent: {
                 paddingVertical: 10,
@@ -1010,6 +1023,9 @@ export default function ProfileScreen({ navigation }) {
                 justifyContent: "center",
                 alignItems: "center",
                 backgroundColor: "rgba(0, 0, 0, 0.5)",
+                fontFamily: ttkFont,
+                fontWeight: "bold",
+                color: Colors.ttkBlack,
               },
               modalContent: {
                 backgroundColor: "#F8FCFB",
@@ -1018,12 +1034,18 @@ export default function ProfileScreen({ navigation }) {
                 marginLeft: 25,
                 marginRight: 25,
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                fontFamily: ttkFont,
+                fontWeight: "bold",
+                color: Colors.ttkBlack,
               },
               modalInput: {
                 flexDirection: "row",
                 alignItems: "center",
                 marginTop: 10,
+                fontFamily: ttkFont,
+                fontWeight: "bold",
+                color: Colors.ttkBlack,
               },
               modalInputAddress: {
                 flexDirection: "row",
@@ -1037,7 +1059,10 @@ export default function ProfileScreen({ navigation }) {
                 height: 40,
                 backgroundColor: '#EEFCFF',
                 borderRadius: 10,
-                paddingLeft: 10
+                paddingLeft: 10,
+                fontFamily: ttkFont,
+                fontWeight: "bold",
+                color: Colors.ttkBlack,
               },
               modalLogoutContent: {
                 backgroundColor: "#F8FCFB",
@@ -1153,6 +1178,9 @@ export default function ProfileScreen({ navigation }) {
                 color: 'white',
                 textAlign: 'center',
                 fontWeight: 'bold',
+                fontFamily: ttkFont,
+                fontWeight: "bold",
+                
               },
               ppIcon: {
                 fontSize: 20,
