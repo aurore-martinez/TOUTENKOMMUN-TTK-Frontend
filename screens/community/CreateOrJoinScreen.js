@@ -1,35 +1,20 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState } from "react";
 import {
-  Platform,
-  SafeAreaView,
-  StatusBar,
-  TouchableOpacity,
-  StyleSheet,
-  Text,
-  View,
-  Modal,
-  Dimensions,
+	SafeAreaView,
+	StatusBar,
+	TouchableOpacity,
+	StyleSheet,
+	Text,
+	View,
+	Modal,
+	Dimensions
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { logout } from "../../reducers/users";
-import Global from "../../styles/Global";
-export const inputRadius = 15;
-export const btnRadius = 10;
-export const ttkFont = "Tuffy";
-export const ttkBoldFont = "Tuffy-Bold";
-export const ttkItalicFont = "Tuffy-Italic";
-export const btnPadding = 15;
-export const iconPadding = 10;
-
-export const Colors = {
-  ttkGreen: "#198EA5",
-  ttkBlack: "#353639",
-};
+import Global, { Colors, ttkFont } from "../../styles/Global";
 
 export default function CreateOrJoinScreen({ navigation }) {
-  const token = useSelector((state) => state.users.token);
 
   const dispatch = useDispatch();
 
