@@ -10,14 +10,21 @@ export const btnRadius = 10;
 export const ttkFont = 'Tuffy';
 export const ttkBoldFont = 'Tuffy-Bold';
 export const ttkItalicFont = 'Tuffy-Italic';
+export const btnPadding = 15;
+export const iconPadding = 10;
 
 export default StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: '#F8FCFB',
 	},
+  title: {
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginTop: '10%',
+  },
   buttonsContainers: {
-		flex: 1,
+    padding: 30,
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-evenly',
@@ -37,38 +44,6 @@ export default StyleSheet.create({
 		fontSize: 20,
     fontFamily: ttkFont,
 		color: Colors.ttkBlack,
-	},
-	btnFB: {
-		flexDirection: 'row',
-		height: '40%',
-		width: '35%',
-		backgroundColor: '#3B5998',
-		justifyContent: 'space-evenly',
-		alignItems: 'center',
-		borderRadius: 10,
-	},
-	btnGG: {
-		flexDirection: 'row',
-		height: '40%',
-		width: '35%',
-		backgroundColor: '#DE4B39',
-		justifyContent: 'space-evenly',
-		alignItems: 'center',
-		borderRadius: 10,
-	},
-	textBtnFB: {
-		color: 'white',
-		fontSize: '20',
-		fontWeight: 'bold'
-	},
-	textBtnGG: {
-		color: 'white',
-		fontSize: '20',
-		fontWeight: 'bold'
-	}, inputContent: {
-		height: '25%',
-		alignItems: 'center',
-		justifyContent: 'space-evenly',
 	},
 	userContent: {
 		flexDirection: 'row',
@@ -96,60 +71,7 @@ export default StyleSheet.create({
 	mdpIcon: {
 		padding: 10,
 	},
-	btnValidateContent: {
-		height: '15%',
-		alignItems: 'center',
-	},
-	btnValidate: {
-		flexDirection: 'row',
-		height: '50%',
-		width: '87%',
-		alignItems: 'center',
-		justifyContent: 'center',
-		backgroundColor: '#198EA5',
-		borderRadius: 10,
-	},
-	handIcon: {
-		color: 'white',
-		fontSize: '20',
-		fontWeight: 'bold',
-		marginRight: 10
-	},
-	btnTextValidate: {
-		color: 'white',
-		fontSize: '20',
-		fontWeight: 'bold',
-		marginRight: 16
-	},
-	bar: {
-		borderBottomColor: '#198EA5',
-		borderBottomWidth: 2,
-		width: '87%',
-		textAlign: 'center',
-		marginLeft: 'auto',
-		marginRight: 'auto',
-		marginBottom: '5%'
-	},
-	btnCreate: {
-		flexDirection: 'row',
-		height: '50%',
-		width: '87%',
-		alignItems: 'center',
-		justifyContent: 'center',
-		backgroundColor: '#F8FCFB',
-		borderBottomColor: '#198EA5',
-		borderBottomWidth: 2,
-		borderLeftColor: '#198EA5',
-		borderLeftWidth: 2,
-		borderTopColor: '#198EA5',
-		borderTopWidth: 2,
-		borderRightColor: '#198EA5',
-		borderRightWidth: 2,
-		borderRadius: 10,
-	},
   inputWithIcon: {
-    flex: 1,
-    flexShrink: 1,
     alignItems: 'center',
 		justifyContent: 'space-evenly',
     flexDirection: 'row',
@@ -159,7 +81,6 @@ export default StyleSheet.create({
     borderRadius: inputRadius
   },
   filledButtonWithIcon: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -168,9 +89,9 @@ export default StyleSheet.create({
     backgroundColor: Colors.ttkGreen,
     width: Dimensions.get('screen').width * 0.85,
     borderRadius: btnRadius,
+    padding: btnPadding
   },
   outlinedButtonWithIcon: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -178,10 +99,24 @@ export default StyleSheet.create({
     borderColor: Colors.ttkGreen,
     width: Dimensions.get('screen').width * 0.85,
     borderRadius: btnRadius,
+    padding: btnPadding
   },
   input: {
     fontFamily: ttkFont,
     padding: 10,
-    // height: 40
-  }
+  },
+  textBtnWithIcon: {
+    color: 'white',
+    fontSize: 20,
+    fontFamily: ttkFont,
+    fontWeight: 'bold',
+    paddingLeft: 10
+  },
+  btnRes: {
+		flexDirection: 'row',
+		justifyContent: 'space-evenly',
+		alignItems: 'center',
+		borderRadius: btnRadius,
+		padding: btnPadding
+	},
 });
