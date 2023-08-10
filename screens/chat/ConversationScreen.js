@@ -36,8 +36,8 @@ export default function ConversationScreen() {
 
 
 
-  const handleChatRoomPress = (room) => {
-    navigation.navigate("ChatRoom", { transactionId: room._id, borrowerUser: room.borrowerUser, lenderUser: room.lenderUser, objectId: room.object._id });
+  const handleChatRoomPress = (room) => {   
+    navigation.navigate("ChatRoom", { transactionId: room._id, borrowerUser: room.borrowerUser, lenderUser: room.lenderUser, objectId: room.object._id, objectName: room.object.name, endDate: room.endDate });
   };
 
    // On recupère le token
