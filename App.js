@@ -73,7 +73,7 @@ const TabNavigator = () => {
 			headerShown: false,
 		})}>
 			<Tab.Screen name="Profil" component={ProfileScreen} options={{ unmountOnBlur: true }}/>
-			<Tab.Screen name="Prêt" component={ListAndMapScreen} />
+			<Tab.Screen name="Prêt" component={ListAndMapScreen} options={{ unmountOnBlur: true }}/>
 			<Tab.Screen name="Communauté" component={CommunityStackNavigator} />
 			<Tab.Screen name="Chat" component={ChatNavigator}/>
 		</Tab.Navigator>

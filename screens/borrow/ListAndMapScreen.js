@@ -158,6 +158,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 
 		if (response.ok) {
       setSearchTerm("");
+      fetchFeed();
 		} else {
 			console.log(data.error);
 		} 
