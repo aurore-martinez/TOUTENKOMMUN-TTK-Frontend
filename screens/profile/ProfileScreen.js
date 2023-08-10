@@ -897,7 +897,6 @@ export default function ProfileScreen({ navigation }) {
             const styles = StyleSheet.create({
               container: {
                 flex: 1,
-                marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
                 height: "100%",
                 backgroundColor: "#F8FCFB",
               },
