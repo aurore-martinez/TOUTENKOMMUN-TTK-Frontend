@@ -100,7 +100,7 @@ export default function CreateScreen({ navigation }) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
-          <FontAwesome style={styles.userIcon} name='user' />
+          <FontAwesome style={styles.userIcon} name='power-off' />
         </View>
         <View style={styles.upperText}>
           <Text style={styles.h5}>Créer ma communauté</Text>

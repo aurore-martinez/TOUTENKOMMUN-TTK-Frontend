@@ -144,18 +144,18 @@ export default function ChatScreen({ navigation, route }) {
     <SafeAreaView style={styles.container}>
       {/* En-tête */}
       <View style={styles.header}>
-    <FontAwesome
-    style={styles.backIcon}
-    name="chevron-left"
-    onPress={handleGoBack}
-    />
-    <Text style={styles.title}>TOUTENKOMMUN</Text>
-    <FontAwesome
-    style={styles.userIcon}
-    name="power-off"
-    onPress={openModalLogout}
-  />
-  </View>
+        <FontAwesome
+        style={styles.backIcon}
+        name="chevron-left"
+        onPress={handleGoBack}
+        />
+        <Text style={styles.title}>TOUTENKOMMUN</Text>
+        <FontAwesome
+        style={styles.userIcon}
+        name="power-off"
+        onPress={openModalLogout}
+      />
+    </View>
 
       {/* Conteneur de discussion */}
       <View style={styles.chatContainer}>

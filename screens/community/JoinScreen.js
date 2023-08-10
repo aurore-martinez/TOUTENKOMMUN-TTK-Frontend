@@ -56,7 +56,7 @@ export default function JoinScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
-          <FontAwesome style={styles.userIcon} name='user' size={20} color='white'/>
+          <FontAwesome style={styles.userIcon} name='power-off' size={20} color='white'/>
         </View>
 
         <View style={styles.contentTop}>
