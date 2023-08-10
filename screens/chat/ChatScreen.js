@@ -18,6 +18,8 @@ import { useDispatch } from "react-redux";
 import { logout } from "../../reducers/users";
 import { BACKEND_URL } from "../../Constants";
 import { useSelector } from "react-redux";
+import Global, { Colors, ttkFont } from "../../styles/Global";
+
 import { useNavigation } from '@react-navigation/native';
 
 
@@ -174,7 +176,8 @@ console.log('route', route)
         {/* Contenu droite */}
         <View style={styles.rightContent}>
           <FontAwesome style={styles.userIconX} name="user" />
-          <Text>
+          
+          <Text style={styles.emprunteurText}>
             Appartient à : <Text style={styles.goldText}>{route.params.lenderUser.username}</Text>
           </Text>
           <Text>{route.params.objectName}</Text>
@@ -373,6 +376,9 @@ const styles = StyleSheet.create({
     color: "#FFFF",
     fontSize: 20,
     fontWeight: "bold",
+    fontFamily: ttkFont,
+
+   
   },
   chatMessagesContainer: {
     flex: 1,
@@ -439,6 +445,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginTop: 10,
+    fontFamily: ttkFont,
+    color: Colors.ttkBlack,
+
   },
   modalContainer: {
     flex: 1,
@@ -460,6 +469,10 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 16,
     marginBottom: 20,
+    color: Colors.ttkBlack,
+    fontFamily: ttkFont,
+    fontWeight: "bold",
+
   },
   modalButton: {
     backgroundColor: "#198EA5",
@@ -502,11 +515,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   emprunteurText: {
-    color: "black",
+    color: Colors.ttkBlack,
+    fontWeight: "bold",
+    fontFamily: ttkFont,
   },
 
   goldText: {
     color: "#CE8D2C",
+    
   },
   backIcon: {
     margin: 10,
