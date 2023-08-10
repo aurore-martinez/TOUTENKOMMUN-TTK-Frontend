@@ -109,6 +109,7 @@ export default function ProfileScreen({ navigation }) {
   const [hasCameraPermission, setHasCameraPermission] = useState(false);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flashMode, setFlashMode] = useState(FlashMode.off);
+  const [errorMissingCommu, setErrorMissingCommu] = useState(null);
 
   const isFocused = useIsFocused();
 
@@ -156,6 +157,12 @@ export default function ProfileScreen({ navigation }) {
   */
 
   const handleAddObject = async () => {
+    console.log(availableIn);
+    if (availableIn.length < 1) {
+      setErrorMissingCommu("Veuillez ajouter au moins une communauté");
+      return;
+    }
+
     if (name !== "") {
       let photoObj = null;
       if (objectPicture) {
@@ -192,6 +199,8 @@ export default function ProfileScreen({ navigation }) {
       } else {
         console.log('Erreur objet non ajouté', dataObject.error);
       }
+
+      closeModal();
     }
   };
 
@@ -206,8 +215,8 @@ export default function ProfileScreen({ navigation }) {
       setAvailableIn(prevIds => [...prevIds, selectedId]);
       console.log('availableIn', availableIn)
     }
-  };
-
+  }; 
+  
 
   const handleDeleteObject = async (objectId) => {
     try {
@@ -313,6 +322,7 @@ export default function ProfileScreen({ navigation }) {
     setModalPlusVisible(false);
     setModalCommunityVisible(false);
     setModalObjectVisible(false);
+    setErrorMissingCommu(null);
   };
 
   // Affichage d'objets d'un user
@@ -702,16 +712,18 @@ export default function ProfileScreen({ navigation }) {
                 }
               </View>
                           <View style={styles.choixCommuAddObjet}>
-                            <Text>Communauté(s) concerné(s) :</Text>
+                            <Text>Communauté(s) concerné(s) (au moins une communauté):</Text>
+                            { errorMissingCommu && <Text style={{ color: 'red' }}>{errorMissingCommu}</Text> }
                             <ScrollView style={{  width: '50%', height:'50%' }} contentContainerStyle={{ flex: 1, justifyContent: 'center', rowGap: 25}}>
 								              {
 									              communities && communities.map((commu, i) => {
+                                  const isSelected = availableIn.includes(commu._id);
 										              return (
                                     <TouchableOpacity 
                                     key={i} 
                                     onPress={() => handleAvailableIn(i)} 
-                                    style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', columnGap: 20, backgroundColor: communities.includes(commu._id) ? '#CE8D2C' : undefined }}>
-                                      <View style={{ backgroundColor: communities.includes(commu._id) ? '#FFFFFF' : 'transparent', borderColor: '#CE8D2C', borderWidth: 1, width: 10, height: 10, borderRadius: 2 }} />
+                                    style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', columnGap: 20}}>
+                                      <View style={{ backgroundColor:  availableIn.includes(commu._id) ? '#CE8D2C' : 'transparent', borderColor: '#CE8D2C', borderWidth: 1, width: 10, height: 10, borderRadius: 2 }} />
                                       <Text>{commu.name}</Text>
                                     </TouchableOpacity>
                                   )
@@ -723,12 +735,7 @@ export default function ProfileScreen({ navigation }) {
                             {/* Bouton pour l'ajout d'un objet */}
                             <TouchableOpacity
                               style={styles.addObjectButton}
-                              onPress={() => {
-                                handleAddObject();
-                                closeModal(); // Fermez la modal après avoir ajouté l'objet
-                              }}
-                            >
-            
+                              onPress={() => { handleAddObject(); }}>
             
                               <FontAwesome
                                 style={styles.ppIcon}
