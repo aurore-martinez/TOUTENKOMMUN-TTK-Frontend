@@ -22,6 +22,9 @@ const Tab = createBottomTabNavigator();
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import users from './reducers/users';
+import SignUpScreenPart2 from './screens/login/SignUpScreenPart2';
+import SignUpScreenPart3 from './screens/login/SignUpScreenPart3';
+import SignUpScreenPart4 from './screens/login/SignUpScreenPart4';
 
 const store = configureStore({
   reducer: { users },
@@ -70,7 +73,7 @@ const TabNavigator = () => {
 			headerShown: false,
 		})}>
 			<Tab.Screen name="Profil" component={ProfileScreen} options={{ unmountOnBlur: true }}/>
-			<Tab.Screen name="Prêt" component={ListAndMapScreen} />
+			<Tab.Screen name="Prêt" component={ListAndMapScreen} options={{ unmountOnBlur: true }}/>
 			<Tab.Screen name="Communauté" component={CommunityStackNavigator} />
 			<Tab.Screen name="Chat" component={ChatNavigator}/>
 		</Tab.Navigator>
@@ -82,7 +85,7 @@ export default function App() {
 	
 
 	const [fontsLoaded] = useFonts({
-		'Tuffy-Regular': require('./assets/fonts/Tuffy-Regular.ttf'),
+		'Tuffy': require('./assets/fonts/Tuffy-Regular.ttf'),
 		'Tuffy-Bold': require('./assets/fonts/Tuffy-Bold.ttf'),
 		'Tuffy-Italic': require('./assets/fonts/Tuffy-Italic.ttf')
 	});
@@ -97,6 +100,9 @@ export default function App() {
 				<Stack.Navigator screenOptions={{ headerShown: false }}>
 					<Stack.Screen name="SignIn" component={SignInScreen} />
 					<Stack.Screen name="SignUp" component={SignUpScreen} />
+          <Stack.Screen name='SignUpPart2' component={SignUpScreenPart2} />
+          <Stack.Screen name='SignUpPart3' component={SignUpScreenPart3} />
+          <Stack.Screen name='SignUpPart4' component={SignUpScreenPart4} />
 					<Stack.Screen name="TabNavigator" component={TabNavigator} />
 				</Stack.Navigator>
 			</NavigationContainer>

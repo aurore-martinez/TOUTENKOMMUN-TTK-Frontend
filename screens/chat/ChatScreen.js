@@ -289,7 +289,6 @@ export default function ChatScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
     backgroundColor: "#F8FCFB",
     // Add shadow properties here
     shadowColor: "#171717",
