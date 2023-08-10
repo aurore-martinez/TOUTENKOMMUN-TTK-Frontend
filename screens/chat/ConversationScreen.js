@@ -7,6 +7,8 @@ import { useSelector } from "react-redux";
 import { BACKEND_URL } from "../../Constants";
 import { useDispatch } from 'react-redux';
 import { logout } from '../../reducers/users';
+import Global, { Colors, ttkFont } from "../../styles/Global";
+
 
 export default function ConversationScreen() {
 
@@ -304,9 +306,10 @@ const styles = StyleSheet.create({
     color: "white",
   },
   conversationTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#353639",
+    fontSize: 25,
+    fontFamily: ttkFont,
+    fontWeight: "bold",
+    color: Colors.ttkBlack,
   },
   rowMenu: {
     flexDirection: "row",
@@ -390,14 +393,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   iconTextContainer: {
+
     flexDirection: "row",
     alignItems: "center",
+    fontFamily: ttkFont,
+    color: Colors.ttkBlack,
+    
   },
   iconText: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#198EA5",
     marginLeft: 3,
+    
+    fontFamily: ttkFont,
+
   },
   listIcon: {
     marginRight: 10,
