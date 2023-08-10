@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Linking } from 'react-native';
 import { useSelector } from "react-redux";
 import { StyleSheet, Text, View, TouchableOpacity, Platform, SafeAreaView, StatusBar, KeyboardAvoidingView, TextInput, Modal } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -182,7 +183,13 @@ export default function CreateScreen({ navigation }) {
                   <FontAwesome style={styles.ppIcon} name='envelope-o' size={20} color='#F8FCFB' />
                   <Text style={styles.emailButtonText}>E-mail</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.smsButton} onPress={() => closeModal()}>
+                    <TouchableOpacity
+                      style={styles.smsButton}
+                      onPress={() => {
+                        const smsBody = encodeURIComponent(`Rejoignez ma communauté avec le code : ${accessCode}`);
+                        Linking.openURL(`sms:&body=${smsBody}`);
+                      }}
+                    >
                   <FontAwesome style={styles.ppIcon} name='commenting' size={20} color='#F8FCFB' />
                   <Text style={styles.smsButtonText}>SMS</Text>
                 </TouchableOpacity>
