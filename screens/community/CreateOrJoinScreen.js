@@ -32,8 +32,9 @@ export default function CreateOrJoinScreen({ navigation }) {
 		{/*HEADER*/}
 		<View style={styles.header}>
 		<Text style={styles.title}>TOUTENKOMMUN</Text>
-		<FontAwesome style={styles.userIcon} name="user" onPress={openModalLogout}/>
+		<FontAwesome style={styles.userIcon} name="power-off" onPress={openModalLogout}/>
 		</View>
+
 		<View style={styles.pageContent}>
 		<View style={styles.topContent}>
 		<Text style={styles.textTopContent}>Choisir ma communauté</Text>
@@ -107,24 +108,24 @@ export default function CreateOrJoinScreen({ navigation }) {
 			backgroundColor: "#F8FCFB",
 		},
 		header: {
-			flexDirection: "row",
-			justifyContent: "space-between",
-			alignItems: "center",
-			padding: 10,
-			backgroundColor: "#198EA5",
-			height: "10%",
-		},
-		title: {
-			fontSize: 20,
-			fontWeight: "bold",
-			color: "white",
-		},
-		userIcon: {
-			margin: 10,
-			fontSize: 20,
-			fontWeight: "bold",
-			color: "white",
-		},
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: 10,
+                backgroundColor: "#198EA5",
+                height: "10%",
+              },
+              title: {
+                fontSize: 20,
+                fontWeight: "bold",
+                color: "white",
+              },
+              userIcon: {
+                margin: 10,
+                fontSize: 20,
+                fontWeight: "bold",
+                color: "white",
+              },
 		pageContent : {
 			height : '90%',
 		},
@@ -247,5 +248,20 @@ export default function CreateOrJoinScreen({ navigation }) {
 			padding: 10,
 			borderRadius: 5,
 		},
+		ppIcon: {
+			fontSize: 20,
+			fontWeight: "bold",
+			marginRight: 10,
+		  },
+		smsButtonText: {
+			color: 'white',
+			textAlign: 'center',
+			fontWeight: 'bold',
+		  },
+		  modalBtnContent: {
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "space-evenly",
+		  },
 	});
 	

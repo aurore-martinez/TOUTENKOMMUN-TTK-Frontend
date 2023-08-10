@@ -405,7 +405,7 @@ export default function ProfileScreen({ navigation }) {
         {/*HEADER*/}
         <View style={styles.header}>
           <Text style={styles.title}>TOUTENKOMMUN</Text>
-          <FontAwesome style={styles.userIcon} name="user" onPress={openModalLogout} />
+          <FontAwesome style={styles.userIcon} name="power-off" onPress={openModalLogout} />
         </View>
 
         {/*CONTENT*/}
