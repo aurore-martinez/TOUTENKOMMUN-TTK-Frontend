@@ -27,7 +27,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function ChatScreen({ navigation, route }) {
 
-
+console.log('route', route)
 
 
 
@@ -90,8 +90,12 @@ export default function ChatScreen({ navigation, route }) {
 
   console.log('token', token)
   console.log('transactionId',route.params.transactionId);
-  console.log('objectId',route.params.objectId);
-  console.log('lenderId',route.params.lenderUser._id);  
+  console.log('objectName',route.params.objectName);
+  console.log('lender',route.params.lenderUser.username);  
+  console.log('borrower',route.params.borrowerUser.username)
+  console.log('endDate',route.params.endDate )
+
+ 
 
   const handleReturnObject = async () => {
     try {
@@ -163,17 +167,17 @@ export default function ChatScreen({ navigation, route }) {
         <View style={styles.leftContent}>
           <FontAwesome style={styles.userIconX} name="user" />
           <Text style={styles.emprunteurText}>
-            Emprunteur : <Text style={styles.goldText}>Laurent</Text>, jusqu'au
-            : <Text style={styles.goldText}>XX/XX/XX</Text>
+            Emprunteur : <Text style={styles.goldText}>{route.params.borrowerUser.username}</Text>, jusqu'au
+            : <Text style={styles.goldText}>{( new Date(route.params.endDate)).toLocaleDateString()}</Text>
           </Text>
         </View>
         {/* Contenu droite */}
         <View style={styles.rightContent}>
           <FontAwesome style={styles.userIconX} name="user" />
           <Text>
-            Appartient à : <Text style={styles.goldText}>Charlène</Text>
+            Appartient à : <Text style={styles.goldText}>{route.params.lenderUser.username}</Text>
           </Text>
-          <Text>Prêt du T-MAX </Text>
+          <Text>{route.params.objectName}</Text>
         </View>
       </View>
 
@@ -248,12 +252,11 @@ export default function ChatScreen({ navigation, route }) {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Récapitulatif</Text>
-            <Text style={styles.modalText}>Emprunteur:[USERNAME] </Text>
+            <Text style={styles.modalText}>Emprunteur: {route.params.borrowerUser.username} </Text>
             <Text style={styles.modalText}>
-              L'objet emprunté :{" "}
-              <FontAwesome name="thumbs-up" size={20} color="black" />{" "}
+              L'objet emprunté : {route.params.objectName}
             </Text>
-            <Text style={styles.modalText}>Date de rendu : XX/XX/20XX</Text>
+            <Text style={styles.modalText}>Date de rendu : {( new Date(route.params.endDate)).toLocaleDateString()}</Text>
 
             <Text style={styles.modalText}>
               Êtes-vous sûr de vouloir rendre l'objet ?
