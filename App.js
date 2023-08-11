@@ -26,6 +26,8 @@ import SignUpScreenPart2 from './screens/login/SignUpScreenPart2';
 import SignUpScreenPart3 from './screens/login/SignUpScreenPart3';
 import SignUpScreenPart4 from './screens/login/SignUpScreenPart4';
 
+import { LogBox } from 'react-native';
+
 const store = configureStore({
   reducer: { users },
 });
@@ -82,7 +84,7 @@ const TabNavigator = () => {
 
 export default function App() {
 
-	
+	LogBox.ignoreAllLogs(); //Ignore all log notifications
 
 	const [fontsLoaded] = useFonts({
 		'Tuffy': require('./assets/fonts/Tuffy-Regular.ttf'),

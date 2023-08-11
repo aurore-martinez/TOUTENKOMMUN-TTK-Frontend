@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   iconCom: {
     borderColor: '#353639',
     borderWidth: 1,
-    borderRadius: '50%',
+    borderRadius: 50,
     width: 70,
     height: 70,
     justifyContent: 'center',

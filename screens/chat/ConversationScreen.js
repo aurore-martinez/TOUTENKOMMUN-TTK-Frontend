@@ -324,6 +324,7 @@ const styles = StyleSheet.create({
   selectedTab: {
     borderBottomColor: "#198EA5",
     borderBottomWidth: 2,
+    padding: 5
   },
   selectedTabText: {
     color: "#198EA5",

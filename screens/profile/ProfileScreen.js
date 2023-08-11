@@ -509,7 +509,12 @@ export default function ProfileScreen({ navigation }) {
                     keyExtractor={(item) => item._id.toString()}
                     renderItem={({ item }) => (
                       <TouchableOpacity onPress={() => openModalCommunity(item)} style={styles.objectItem}>
-                        <FontAwesome name='image' size={100} />
+                        {item.photo.match("res.cloudinary.com") ?
+                          <Image style={{ height: 75, width: 75 }} resizeMode='contain' source={{ uri: item.photo }} />
+                          :
+                          <FontAwesome name='image' size={75} />
+                        }
+
                         <Text>{item.name}</Text>
                       </TouchableOpacity>
                     )}
@@ -936,6 +941,7 @@ export default function ProfileScreen({ navigation }) {
                 height: "38%",
                 alignItems: "center",
                 justifyContent: "center",
+                marginBottom: 10
               },
               commuIcon: {
                 marginBottom: 20,
