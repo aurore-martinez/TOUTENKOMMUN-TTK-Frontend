@@ -629,6 +629,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "white",
+    fontFamily: ttkFont
   },
   userIcon: {
     margin: 10,
@@ -637,9 +638,7 @@ const styles = StyleSheet.create({
     color: "white",
   },
   titleh: {
-  
-
-    fontSize: 23,
+    fontSize: 20,
     fontFamily: ttkFont,
     fontWeight: "bold",
     color: Colors.ttkBlack,
