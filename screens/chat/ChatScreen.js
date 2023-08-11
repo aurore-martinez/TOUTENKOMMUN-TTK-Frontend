@@ -64,8 +64,8 @@ console.log('route', route)
 
   // Exemple de messages de chat
   const chatMessages = [
-    { user: "Laurent", text: "Hey tu peux me prêter ton T-MAX ?" },
-    { user: "Charlène", text: "Pas de soucis ! " },
+    { user: route.params.borrowerUser.username, text: "Hey tu peux me prêter ton " + route.params.objectName + "?" },
+    { user: route.params.lenderUser.username, text: "Pas de soucis ! " },
   ];
 
   // Fonction pour afficher les messages de chat
@@ -75,7 +75,7 @@ console.log('route', route)
         key={index}
         style={[
           styles.chatMessage,
-          message.user === "Charlène"
+          message.user === route.params.lenderUser.username
             ? styles.rightChatMessage
             : styles.leftChatMessage,
         ]}
@@ -83,7 +83,7 @@ console.log('route', route)
         <Text
           style={[
             styles.messageText,
-            message.user === "Charlène" ? styles.blackText : null,
+            message.user === route.params.lenderUser.username ? styles.blackText : null,
           ]}
         >{`${message.user}: ${message.text}`}</Text>
       </View>
