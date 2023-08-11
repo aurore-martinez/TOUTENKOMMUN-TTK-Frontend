@@ -42,7 +42,7 @@ export default function CreateOrJoinScreen({ navigation }) {
         <Text style={styles.title}>TOUTENKOMMUN</Text>
         <FontAwesome
           style={styles.userIcon}
-          name="user"
+          name="power-off"
           onPress={openModalLogout}
         />
       </View>
@@ -74,7 +74,7 @@ export default function CreateOrJoinScreen({ navigation }) {
           <View style={styles.bar} />
 
           <View style={styles.createContent}>
-            <Text style={Global.h5}>
+            <Text style={[Global.h5, { width: Dimensions.get('screen').width * .85 }]}>
               Prêt(e) à lancer ta propre communauté et inviter les proches?
             </Text>
             <TouchableOpacity
@@ -276,4 +276,20 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
+  ppIcon: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginRight: 10,
+  },
+  smsButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  modalBtnContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-evenly",
+  },
+
 });

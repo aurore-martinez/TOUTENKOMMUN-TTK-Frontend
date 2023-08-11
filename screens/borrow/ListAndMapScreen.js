@@ -50,6 +50,8 @@ export default function ListAndMapScreen({ route, navigation }) {
 
 	const token = useSelector((state) => state.users.token);
 
+  const [user, setUser] = useState(null);
+
 	// Effet pour demander et surveiller les autorisations de localisation
 	useEffect(() => {
 		(async () => {
@@ -62,6 +64,14 @@ export default function ListAndMapScreen({ route, navigation }) {
 				});
 			}
 		})();
+
+    (async () => {
+      const response = await fetch(`${BACKEND_URL}/users/profil/${token}`);
+      const userData = await response.json();
+      if (userData.result) {
+        setUser({ username: userData.username, address: userData.address[0] });
+      }
+    })();
 
 		// Récupération des communautés de User
 		(async () => {
@@ -419,7 +429,7 @@ export default function ListAndMapScreen({ route, navigation }) {
 					) : (
 						// Carte avec localisation
 						<View style={styles.mapContainer}>
-							{selectedTab === "Carte" && location && (
+							{selectedTab === "Carte" && location && user && (
 								<MapView
 									style={styles.map}
 									initialRegion={{
@@ -429,6 +439,10 @@ export default function ListAndMapScreen({ route, navigation }) {
 										longitudeDelta: 0.8,
 									}}
 								>
+
+                  <Marker coordinate={{ latitude: location?.coords?.latitude, longitude: location?.coords?.longitude }} title="Votre position" pinColor="gold" />
+                  <Marker coordinate={{ latitude: user.address.latitude, longitude: user.address.longitude }} title={user.username} pinColor="green" />
+
 									{mapObjects.map((mapObj, i) => {
 										// Corrected variable name
 										console.log("Marker:", mapObj);
@@ -721,6 +735,7 @@ const styles = StyleSheet.create({
   selectedTab: {
     borderBottomColor: "#198EA5",
     borderBottomWidth: 2,
+    padding: 5
   },
   selectedTabText: {
     color: "#198EA5",
