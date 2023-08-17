@@ -1,1 +1,1 @@
-export const BACKEND_URL = 'http://192.168.10.201:3000';
+export const BACKEND_URL = process.env.BACKEND_URL
