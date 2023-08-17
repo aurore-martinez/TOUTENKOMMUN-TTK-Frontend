@@ -157,9 +157,9 @@ export default function ListAndMapScreen({ route, navigation }) {
 		}
 	};
 
-	/**
-	 * Fonction pour emprunter un objet
-	 */
+	
+	// Fonction pour emprunter un objet
+	
 	const handleBorrow = async () => {
 		const response = await fetch(`${BACKEND_URL}/transactions/borrow/${token}`, {
 			method: 'POST',
